@@ -1,0 +1,10 @@
+peer
+configtxgen
+configtxlator
+cryptogen
+discover
+fabric-ca-client
+idemixgen
+orderer
+osnadmin
+fabric-ca-server

@@ -29,8 +29,8 @@ This will need to be a network with
 - each organisation has at least 2 peers
 - a 5 orderer raft setup
 - We do not need a CA, we can use cryptogen
-- We do not need TLS certs but not a problem if that's ok
-- We can use a system channel if we want
+- We do not need peer TLS certs but not a problem if we do
+- We can use a system channel if we want, but latest test network doesn't use it
 - We will have a single application channel
 
 ## Chaincode required
