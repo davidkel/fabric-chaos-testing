@@ -18,6 +18,10 @@ export VERBOSE=false
 
 . scripts/utils.sh
 
+infoln "pulling latest peer and orderer images"
+docker pull hyperledger-fabric.jfrog.io/fabric-orderer:amd64-latest
+docker pull hyperledger-fabric.jfrog.io/fabric-peer:amd64-latest
+
 # Obtain CONTAINER_IDS and remove them
 # TODO Might want to make this optional - could clear other containers
 # This function is called when you bring a network down

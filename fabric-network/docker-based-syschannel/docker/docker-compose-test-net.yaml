@@ -23,7 +23,7 @@ services:
 
   orderer1.example.com:
     container_name: orderer1.example.com
-    image: hyperledger/fabric-orderer:latest
+    image: hyperledger-fabric.jfrog.io/fabric-orderer:amd64-latest
     environment:
       - FABRIC_LOGGING_SPEC=INFO
       - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
@@ -57,7 +57,7 @@ services:
 
   orderer2.example.com:
     container_name: orderer2.example.com
-    image: hyperledger/fabric-orderer:latest
+    image: hyperledger-fabric.jfrog.io/fabric-orderer:amd64-latest
     environment:
       - FABRIC_LOGGING_SPEC=INFO
       - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
@@ -91,7 +91,7 @@ services:
 
   orderer3.example.com:
     container_name: orderer3.example.com
-    image: hyperledger/fabric-orderer:latest
+    image: hyperledger-fabric.jfrog.io/fabric-orderer:amd64-latest
     environment:
       - FABRIC_LOGGING_SPEC=INFO
       - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
@@ -125,7 +125,7 @@ services:
 
   orderer4.example.com:
     container_name: orderer4.example.com
-    image: hyperledger/fabric-orderer:latest
+    image: hyperledger-fabric.jfrog.io/fabric-orderer:amd64-latest
     environment:
       - FABRIC_LOGGING_SPEC=INFO
       - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
@@ -159,7 +159,7 @@ services:
 
   orderer5.example.com:
     container_name: orderer5.example.com
-    image: hyperledger/fabric-orderer:latest
+    image: hyperledger-fabric.jfrog.io/fabric-orderer:amd64-latest
     environment:
       - FABRIC_LOGGING_SPEC=INFO
       - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
@@ -193,7 +193,7 @@ services:
 
   peer0.org1.example.com:
     container_name: peer0.org1.example.com
-    image: hyperledger/fabric-peer:latest
+    image: hyperledger-fabric.jfrog.io/fabric-peer:amd64-latest
     environment:
       #Generic peer variables
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
@@ -230,7 +230,7 @@ services:
 
   peer0.org2.example.com:
     container_name: peer0.org2.example.com
-    image: hyperledger/fabric-peer:latest
+    image: hyperledger-fabric.jfrog.io/fabric-peer:amd64-latest
     environment:
       #Generic peer variables
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
@@ -290,7 +290,7 @@ services:
 
   peer0.org3.example.com:
     container_name: peer0.org3.example.com
-    image: hyperledger/fabric-peer:latest
+    image: hyperledger-fabric.jfrog.io/fabric-peer:amd64-latest
     environment:
       #Generic peer variables
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
