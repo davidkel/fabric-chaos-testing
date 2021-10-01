@@ -1,0 +1,26 @@
+{
+  "name": "client-application-for-fabric-testing",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint . --ext .ts",
+    "build": "tsc",
+    "start": "npm run build && node --require dotenv/config dist/app.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@tsconfig/node12": "^1.0.9",
+    "@typescript-eslint/eslint-plugin": "^4.31.2",
+    "@typescript-eslint/parser": "^4.31.2",
+    "eslint": "^7.32.0"
+  },
+  "dependencies": {
+    "dotenv": "^10.0.0",
+    "env-var": "^7.0.1",
+    "fabric-gateway": "0.1.0-dev.20210929.7",
+    "winston": "^3.3.3"
+  }
+}
