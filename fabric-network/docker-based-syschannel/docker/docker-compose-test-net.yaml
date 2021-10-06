@@ -267,7 +267,7 @@ services:
 
   cli:
     container_name: cli
-    image: hyperledger/fabric-tools:latest
+    image: hyperledger-fabric.jfrog.io/fabric-tools:amd64-latest
     tty: true
     stdin_open: true
     environment:

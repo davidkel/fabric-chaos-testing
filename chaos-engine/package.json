@@ -1,0 +1,29 @@
+{
+  "name": "chaos-engine",
+  "version": "1.0.0",
+  "description": "This is a process that executes a series of scenarios randomly. The scenarios are made of of the following simple commands",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/start.js ./scenarios peer0.org1.example.com",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "@tsconfig/node12": "^1.0.9",
+    "@types/dockerode": "3.2.7",
+    "@types/js-yaml": "^4.0.3",
+    "@types/node": "^12.20.25",
+    "@types/source-map-support": "^0.5.4",
+    "@typescript-eslint/eslint-plugin": "^4.31.2",
+    "@typescript-eslint/parser": "^4.31.2",
+    "eslint": "^7.32.0",
+    "typescript": "4.4.3"
+  },
+  "dependencies": {
+    "dockerode": "3.3.1",
+    "js-yaml": "^4.1.0",
+    "source-map-support": "^0.5.20"
+  },
+  "author": "",
+  "license": "Apache-2.0"
+}

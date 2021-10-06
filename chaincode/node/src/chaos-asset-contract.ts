@@ -84,7 +84,8 @@ export class ChaosAssetContract extends Contract {
         const timestamp = new Date().toISOString();
         const txnId = ctx.stub.getTxID();
         const marker = isExit ? ' EXIT  ': ' ENTRY ';
-        console.log(`CC : ${process.env.CORE_PEER_LOCALMSPID} : ${timestamp} : ${txnId} : ${marker}`);
+        //TODO: Move to JSON output
+        console.log(`CC : ${timestamp} : ${process.env.CORE_PEER_LOCALMSPID} : ${txnId} : ${marker}`);
     }
 
     // could use logspout or CORE_VM_DOCKER_ATTACHSTDOUT=true
