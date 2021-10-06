@@ -1,7 +1,7 @@
 name: StopAndRestartGateway
 description: TBD
 steps:
-  - stopgateway
-  - sleep 30000
-  - restartgateway
-  - sleep 30000
+  - pausegateway
+  - sleep 10000
+  - unpausegateway
+  - sleep 5000

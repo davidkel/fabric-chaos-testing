@@ -12,13 +12,27 @@ class Scenario {
     steps: string[] = []
 }
 
-type Steps = 'stopgateway' | 'restartgateway' | 'pausegateway' | 'unpausegateway' | 'delay' | 'sleep'
+type GatewaySteps = 'stopgateway' | 'restartgateway' | 'pausegateway' | 'unpausegateway';
+type PeerSteps = 'unpausepeer' | 'restartpeer' | 'pausepeer' |'stoppeer';
+type OrdererSteps = 'pauseorderer' | 'stoporderer' | 'restartorderer' | 'unpauseorderer';
+type GenericSteps =  'delay' | 'sleep';
+type Steps = GatewaySteps | PeerSteps | OrdererSteps | GenericSteps;
 
 const stepMapper: Map<Steps, keyof NodeManager> = new Map<Steps, keyof NodeManager>();
 stepMapper.set('stopgateway', 'stopGatewayPeer');
 stepMapper.set('restartgateway', 'restartGatewayPeer');
 stepMapper.set('pausegateway', 'pauseGatewayPeer');
 stepMapper.set('unpausegateway', 'unpauseGatewayPeer');
+stepMapper.set('stoppeer', 'stopNonGatewayPeer');
+stepMapper.set('pausepeer', 'pauseNonGatewayPeer');
+stepMapper.set('unpausepeer', 'unpauseNonGatewayPeer');
+stepMapper.set('restartpeer', 'restartNonGatewayPeer');
+stepMapper.set('pauseorderer', 'pauseOrderer');
+stepMapper.set('restartorderer', 'restartOrderer');
+
+//TODO: AllOrderer Actions
+//TODO: Org Actions
+
 
 stepMapper.set('delay', 'sleep');
 stepMapper.set('sleep', 'sleep');
@@ -32,7 +46,6 @@ export class ScenarioRunner {
     }
 
     async loadScenarios(): Promise<void> {
-        console.log(this.scenariodir);
         const scenarioFiles = await fs.readdir(this.scenariodir);
         for (const scenarioFile of scenarioFiles) {
             if (scenarioFile.toLowerCase().endsWith('.yaml')) {
@@ -64,6 +77,9 @@ export class ScenarioRunner {
             actionAndParameters.shift();
             await toInvoke.call(nodeManager, actionAndParameters);
         }
+
+        this.logPoint(`scenario ${scenarioName}:${scenario?.description} completed successfully`);
+
     }
 
     //TODO: Change to a JSON format
