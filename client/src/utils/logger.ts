@@ -1,6 +1,7 @@
 import winston from 'winston';
 
 const format = winston.format.combine(winston.format.json(),
+winston.format.splat(),
 winston.format.timestamp())
 
 export const logger = winston.createLogger({
