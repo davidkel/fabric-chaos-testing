@@ -5,45 +5,60 @@ export const logLevel = env
   .default('info')
   .asEnum([ 'error', 'warn', 'info', 'debug']);
 
-export const keyPath = env
-  .get('KEY_PATH')
-  .default('')
+export const ORGS = env
+  .get('ORGS')
+  .required()
+  .asJson()
+
+export const ORG = env
+  .get('ORG')
+  .required()
+  .default('Org1MSP')
   .asString()
 
-  export const certPath = env
-  .get('CERT_PATH')
-  .default('')
-  .asString()
 
-  export const tlsCertPath = env
-  .get('TLS_CERT_PATH')
-  .default('')
-  .asString()
+  export const TRANSACTION_COUNT = env
+  .get('TRANSACTION_COUNT')
+  .required()
+  .default(20)
+  .asIntPositive()
+
+  export const CHAINCODE_DATA = env
+  .get('CHAINCODE_DATA')
+  .default({"FUNCTION":"createChaosAsset",
+  "ARGS":[`asset${Math.random}`,'value']})
+  .required()
+  .asJson()
+
+
+
+
 
   export const peerEndPoint =env
   .get('PEER_ENDPOINT')
+  .required()
   .default('')
   .asString()
 
   export const channelName = env
   .get('CHANNEL_NAME')
+  .required()
   .default('mychannel')
   .asString();
 
 export const chaincodeName = env
   .get('CHAINCODE_NAME')
+  .required()
   .default('basic')
   .asString();
 
+export const batchInterval = env.get('BATCH_INTERVAL').default(2000).asIntPositive();
 
 
-export const mspID = env
-  .get('MSP_ID')
-  .default('Org1MSP')
-  .asString();
 
 
-  export const gatewayPeer = env
+
+export const gatewayPeer = env
   .get('GATEWAY_PEER')
   .asString();
 
