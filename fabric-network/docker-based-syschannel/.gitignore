@@ -1,2 +1,4 @@
 log.txt
 *.tar.gz
+*.block
+*.tx

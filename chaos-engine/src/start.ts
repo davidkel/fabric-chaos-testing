@@ -24,8 +24,15 @@ const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
     while (keepRunning) {
         const scenarioIndex = Math.round(Math.random() * (scenarioNames.length - 1));
         await scenarioRunner.runScenario(scenarioNames[scenarioIndex]);
-        const delay = Math.round(Math.random() * (MAX_DELAY_IN_MILLISECONDS - MIN_DELAY_IN_MILLISECONDS)) + MIN_DELAY_IN_MILLISECONDS;
-        await sleep(delay);
+
+        if (keepRunning) {
+            const delay = Math.round(Math.random() * (MAX_DELAY_IN_MILLISECONDS - MIN_DELAY_IN_MILLISECONDS)) + MIN_DELAY_IN_MILLISECONDS;
+            // TODO: Centralise the logging
+            const timestamp = new Date().toISOString();
+            const message = `sleeping for ${delay}ms before starting next scenario`;
+            console.log(`CHAOS : ${timestamp} : ${message}`);
+            await sleep(delay);
+        }
     }
 
 })();

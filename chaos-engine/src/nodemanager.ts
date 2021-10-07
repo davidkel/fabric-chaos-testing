@@ -20,20 +20,24 @@ export class NodeManager {
 
     private async getGatewayPeer(): Promise<ContainerInfo> {
         const containers = await this.docker.listContainers();
+
         for (const container of containers) {
-            if (container.Names[0].substr(1).toLowerCase() === this.gatewayPeer) {
+            if (container.State !== 'paused' && container.Names[0].substr(1).toLowerCase() === this.gatewayPeer) {
                 return container;
             }
         }
-        throw new Error(`Gateway peer ${this.gatewayPeer} not found`);
+
+        // TODO: Maybe not throw an error but caller then needs to handle it not being found
+        throw new Error(`Gateway peer ${this.gatewayPeer} paused or not found`);
     }
 
     private async getAllRunningPeerContainers(organisation: string | null = null): Promise<ContainerInfo[]> {
         const containers = await this.docker.listContainers();
         const peerContainers: ContainerInfo[] = [];
+
         for (const container of containers) {
             const containerName = container.Names[0].substr(1).toLowerCase();
-            if (containerName.startsWith('peer') && containerName !== this.gatewayPeer) {
+            if (containerName.startsWith('peer') && containerName !== this.gatewayPeer && container.State !== 'paused') {
                 const splitName = container.Names[0].split('.');
                 if (!organisation) {
                     peerContainers.push(container);
@@ -42,17 +46,20 @@ export class NodeManager {
                 }
             }
         }
+
         return peerContainers;
     }
 
     private async getAllOrdererContainers() {
         const containers = await this.docker.listContainers();
         const ordererContainers: ContainerInfo[] = [];
+
         for (const container of containers) {
-            if (container.Names[0].startsWith('orderer')) {
+            if (container.Names[0].startsWith('orderer') && container.State !== 'paused') {
                 ordererContainers.push(container);
             }
         }
+
         return ordererContainers;
     }
 
@@ -139,13 +146,15 @@ export class NodeManager {
 
     async stopNonGatewayPeer(params: string[], stop = true): Promise<void> {
         const peers = await this.getAllRunningPeerContainers(params[0]);
+
         if (peers.length === 0) {
+            // TODO: Maybe just log
             throw new Error('No peers');
         }
 
         const randomPeerIndex = Math.round(Math.random() * (peers.length - 1));
         const nonGatewayPeer = peers[randomPeerIndex];
-        await this.stopContainer(nonGatewayPeer, 'stop', 'peer');
+        await this.stopContainer(nonGatewayPeer, stop ? 'stop' : 'pause', 'peer');
     }
 
     async unpauseNonGatewayPeer(params: string[]): Promise<void> {
@@ -181,26 +190,21 @@ export class NodeManager {
 
     // Orderer Actions
 
-    async stopOrderer(): Promise<void> {
+    async stopOrderer(stop = true): Promise<void> {
         const orderers = await this.getAllOrdererContainers();
+
         if (orderers.length === 0) {
+            // TODO: Maybe not throw an error
             throw new Error('No orderers');
         }
 
         const randomOrdererIndex = Math.round(Math.random() * (orderers.length - 1));
         const orderer = orderers[randomOrdererIndex];
-        this.stopContainer(orderer, 'stop', 'orderer');
+        this.stopContainer(orderer, stop ? 'stop' : 'pause', 'orderer');
 
     }
     async pauseOrderer(): Promise<void> {
-        const orderers = await this.getAllOrdererContainers();
-        if (orderers.length === 0) {
-            throw new Error('No orderers');
-        }
-
-        const randomOrdererIndex = Math.round(Math.random() * (orderers.length - 1));
-        const orderer = orderers[randomOrdererIndex];
-        this.stopContainer(orderer, 'pause', 'orderer');
+        await this.stopOrderer(false);
     }
 
     async restartOrderer(): Promise<void> {
@@ -217,7 +221,6 @@ export class NodeManager {
 
     async restartAllOrderers(): Promise<void> {
         // TODO
-
     }
 
     async pauseAllOrderers(): Promise<void> {
