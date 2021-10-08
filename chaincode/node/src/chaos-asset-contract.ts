@@ -4,15 +4,16 @@
 
 import { Context, Contract } from 'fabric-contract-api';
 import { ChaosAsset } from './chaos-asset';
+import {Logger} from './logger';
 
 export class ChaosAssetContract extends Contract {
 
     public async beforeTransaction(ctx: Context) {
-        this.logPoint(ctx);
+        Logger.logPoint(ctx);
     }
 
     public async afterTransaction(ctx: Context) {
-        this.logPoint(ctx, true);
+        Logger.logPoint(ctx, true);
     }
 
     public async chaosAssetExists(ctx: Context, chaosAssetId: string): Promise<boolean> {
@@ -78,14 +79,6 @@ export class ChaosAssetContract extends Contract {
             const buffer = Buffer.from(JSON.stringify(chaosAsset));
             await ctx.stub.putState('' + id, buffer);
         }
-    }
-
-    private logPoint(ctx: Context, isExit = false) {
-        const timestamp = new Date().toISOString();
-        const txnId = ctx.stub.getTxID();
-        const marker = isExit ? ' EXIT  ': ' ENTRY ';
-        //TODO: Move to JSON output
-        console.log(`CC : ${timestamp} : ${process.env.CORE_PEER_LOCALMSPID} : ${txnId} : ${marker}`);
     }
 
     // could use logspout or CORE_VM_DOCKER_ATTACHSTDOUT=true

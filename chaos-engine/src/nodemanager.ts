@@ -1,13 +1,12 @@
 import Dockerode, { ContainerInfo } from 'dockerode';
+import {Logger} from './logger';
 
 export type NodeManagerActions = (params: string[]) => Promise<void>;
 
 type ContainerType = 'orderer' | 'peer' | 'gateway';
 type StopType = 'stop' | 'pause';
 type StartType = 'restart' | 'unpause';
-
-//TODO: Error Handling
-//TODO: complete actions
+type RestartCount = 'first' | 'all';
 
 export class NodeManager {
 
@@ -18,7 +17,7 @@ export class NodeManager {
         this.docker = new Dockerode();
     }
 
-    private async getGatewayPeer(): Promise<ContainerInfo> {
+    private async getGatewayPeer(): Promise<ContainerInfo | null> {
         const containers = await this.docker.listContainers();
 
         for (const container of containers) {
@@ -27,8 +26,8 @@ export class NodeManager {
             }
         }
 
-        // TODO: Maybe not throw an error but caller then needs to handle it not being found
-        throw new Error(`Gateway peer ${this.gatewayPeer} paused or not found`);
+        Logger.logPoint('Running', `Gateway peer ${this.gatewayPeer} paused or not found`);
+        return null;
     }
 
     private async getAllRunningPeerContainers(organisation: string | null = null): Promise<ContainerInfo[]> {
@@ -55,7 +54,8 @@ export class NodeManager {
         const ordererContainers: ContainerInfo[] = [];
 
         for (const container of containers) {
-            if (container.Names[0].startsWith('orderer') && container.State !== 'paused') {
+            const containerName = container.Names[0].substr(1).toLowerCase();
+            if (containerName.startsWith('orderer') && container.State !== 'paused') {
                 ordererContainers.push(container);
             }
         }
@@ -65,58 +65,60 @@ export class NodeManager {
 
     private async stopContainer(containerInfo: ContainerInfo, stop: StopType, containerType: ContainerType) {
         const containerName = containerInfo.Names[0].substr(1);
-        this.logPoint(`${stop === 'stop' ? 'stopping' : 'pausing'} ${containerType} ${containerName} ${containerInfo.Id}`);
+        Logger.logPoint('Running', `${stop === 'stop' ? 'stopping' : 'pausing'} ${containerType} ${containerName} ${containerInfo.Id}`);
         const container = this.docker.getContainer(containerInfo.Id);
         await (stop === 'stop' ? container.stop() : container.pause());
-        this.logPoint(`${stop === 'stop'? 'stopped' : 'paused'}  ${containerType} ${containerName} ${containerInfo.Id}`);
+        Logger.logPoint('Running', `${stop === 'stop'? 'stopped' : 'paused'}  ${containerType} ${containerName} ${containerInfo.Id}`);
         this.stoppedContainers.push(containerInfo);
     }
 
-    private async restartStoppedContainer(start: StartType, containerType: ContainerType, org: string | undefined = undefined) {
+    private async restartStoppedContainers(start: StartType, containerType: ContainerType, org: string | undefined = undefined, restartType: RestartCount = 'first') {
         if (this.stoppedContainers.length === 0) {
-            this.logPoint("No containers to start");
+            Logger.logPoint('Running', 'No containers to start');
             return;
         }
 
-        let containerToStart: ContainerInfo | undefined;
+        let containersToStart: ContainerInfo[] = [];
         let containerName: string = '';
 
         for (const stoppedContainer of this.stoppedContainers) {
             containerName = stoppedContainer.Names[0].substr(1).toLowerCase();
             if (containerType === 'gateway' && containerName === this.gatewayPeer) {
-                containerToStart = stoppedContainer;
+                containersToStart.push(stoppedContainer);
                 break;
             }
 
             if (containerType === 'peer' && containerName.startsWith('peer')) {
                 if (!org || containerName.includes(org)) {
-                    containerToStart = stoppedContainer;
-                    break;
+                    containersToStart.push(stoppedContainer);
+                    if (restartType === 'first') {
+                        break;
+                    }
                 }
             }
 
             if (containerType === 'orderer' && containerName.startsWith('orderer')) {
-                containerToStart = stoppedContainer;
-                break;
-            }
+                containersToStart.push(stoppedContainer);
+                if (restartType === 'first') {
+                    break;
+                }
+        }
         }
 
-        if (!containerToStart) {
-            this.logPoint('No container found to start');
+        if (containersToStart.length === 0) {
+            Logger.logPoint('Running', 'No container found to start');
         }
 
-        this.logPoint(`${start === 'restart' ? 'restarting' : 'unpausing'} ${containerType} ${containerName} ${containerToStart!.Id}`);
-        const container = this.docker.getContainer(containerToStart!.Id);
-        await (start === 'restart' ? container.start() : container.unpause());
-        this.logPoint(`${start === 'restart' ? 'restarted' : 'unpaused'} ${containerType} ${containerName} ${containerToStart!.Id}`);
+        for (const containerToStart of containersToStart) {
+            containerName = containerToStart.Names[0].substr(1).toLowerCase();
+            Logger.logPoint('Running', `${start === 'restart' ? 'restarting' : 'unpausing'} ${containerType} ${containerName} ${containerToStart!.Id}`);
+            const container = this.docker.getContainer(containerToStart!.Id);
+            await (start === 'restart' ? container.start() : container.unpause());
+            Logger.logPoint('Running', `${start === 'restart' ? 'restarted' : 'unpaused'} ${containerType} ${containerName} ${containerToStart!.Id}`);
+            const indexOfContainer = this.stoppedContainers.indexOf(containerToStart);
+            this.stoppedContainers.splice(indexOfContainer, 1);
+        }
     }
-
-    // TODO: move to JSON
-    private logPoint(message: string) {
-        const timestamp = new Date().toISOString();
-        console.log(`CHAOS : ${timestamp} : ${message}`);
-    }
-
 
     // Node actions
 
@@ -124,20 +126,24 @@ export class NodeManager {
 
     async pauseGatewayPeer(): Promise<void> {
         const gatewayPeerInfo = await this.getGatewayPeer();
-        await this.stopContainer(gatewayPeerInfo, 'pause', 'gateway');
+        if (gatewayPeerInfo) {
+            await this.stopContainer(gatewayPeerInfo, 'pause', 'gateway');
+        }
     }
 
     async stopGatewayPeer(): Promise<void> {
         const gatewayPeerInfo = await this.getGatewayPeer();
-        await this.stopContainer(gatewayPeerInfo, 'stop', 'gateway');
+        if (gatewayPeerInfo) {
+            await this.stopContainer(gatewayPeerInfo, 'stop', 'gateway');
+        }
     }
 
     async unpauseGatewayPeer(): Promise<void> {
-        await this.restartStoppedContainer('unpause', 'gateway');
+        await this.restartStoppedContainers('unpause', 'gateway');
     }
 
     async restartGatewayPeer(): Promise<void> {
-        await this.restartStoppedContainer('restart', 'gateway');
+        await this.restartStoppedContainers('restart', 'gateway');
     }
 
     async pauseNonGatewayPeer(params: string[]): Promise<void> {
@@ -145,11 +151,16 @@ export class NodeManager {
     }
 
     async stopNonGatewayPeer(params: string[], stop = true): Promise<void> {
-        const peers = await this.getAllRunningPeerContainers(params[0]);
+        const organisation = params[0];
+        const peers = await this.getAllRunningPeerContainers(organisation);
 
         if (peers.length === 0) {
-            // TODO: Maybe just log
-            throw new Error('No peers');
+            if (organisation) {
+                Logger.logPoint('Running', `No running non gateway peers for ${organisation} found`)
+            } else {
+                Logger.logPoint('Running', `No running non gateway peers found`)
+            }
+            return;
         }
 
         const randomPeerIndex = Math.round(Math.random() * (peers.length - 1));
@@ -158,33 +169,34 @@ export class NodeManager {
     }
 
     async unpauseNonGatewayPeer(params: string[]): Promise<void> {
-        await this.restartStoppedContainer('unpause', 'peer', params[0]);
+        await this.restartStoppedContainers('unpause', 'peer', params[0]);
     }
 
     async restartNonGatewayPeer(params: string[]): Promise<void> {
-        await this.restartStoppedContainer('restart', 'peer', params[0]);
+        await this.restartStoppedContainers('restart', 'peer', params[0]);
     }
 
-    // Org Actions TODO
+    // Peer Org Actions
 
-    async stopAllOrgPeers(params: string[]): Promise<void> {
-        // get all the peers in the org
-        // stop them and save them
+    async stopAllOrgPeers(params: string[], stop = true): Promise<void> {
+        const peers = await this.getAllRunningPeerContainers(params[0]);
+        for (const peer of peers) {
+            await this.stopContainer(peer, stop ? 'stop' : 'pause', 'peer');
+        }
     }
 
-    async restartAllOrgPeers(params: string[]): Promise<void> {
-        // get all the peers in the org
-        // stop them and save them
+    async restartAllOrgPeers(params: string[], start = true): Promise<void> {
+        const organisation = params[0];
+        await this.restartStoppedContainers('restart', 'peer', organisation, 'all');
     }
 
     async pauseAllOrgPeers(params: string[]): Promise<void> {
-        // get all the peers in the org
-        // stop them and save them
+        await this.stopAllOrgPeers(params, false);
     }
 
     async unpauseAllOrgPeers(params: string[]): Promise<void> {
-        // get all the peers in the org
-        // stop them and save them
+        const organisation = params[0];
+        await this.restartStoppedContainers('unpause', 'peer', organisation, 'all');
     }
 
 
@@ -194,45 +206,48 @@ export class NodeManager {
         const orderers = await this.getAllOrdererContainers();
 
         if (orderers.length === 0) {
-            // TODO: Maybe not throw an error
-            throw new Error('No orderers');
+            Logger.logPoint('Running', 'No running orderers found');
+            return;
         }
 
         const randomOrdererIndex = Math.round(Math.random() * (orderers.length - 1));
         const orderer = orderers[randomOrdererIndex];
-        this.stopContainer(orderer, stop ? 'stop' : 'pause', 'orderer');
-
+        await this.stopContainer(orderer, stop ? 'stop' : 'pause', 'orderer');
     }
+
     async pauseOrderer(): Promise<void> {
         await this.stopOrderer(false);
     }
 
     async restartOrderer(): Promise<void> {
-        this.restartStoppedContainer('restart', 'orderer');
+        await this.restartStoppedContainers('restart', 'orderer');
     }
 
     async unpauseOrderer(): Promise<void> {
-        this.restartStoppedContainer('unpause', 'orderer');
+        await this.restartStoppedContainers('unpause', 'orderer');
     }
 
-    async stopAllOrderers(): Promise<void> {
-        // TODO
+    async stopAllOrderers(stop = true): Promise<void> {
+        const orderers = await this.getAllOrdererContainers();
+        for (const orderer of orderers) {
+            await this.stopContainer(orderer, stop ? 'stop' : 'pause', 'peer');
+        }
     }
 
     async restartAllOrderers(): Promise<void> {
-        // TODO
+        await this.restartStoppedContainers('restart', 'orderer', undefined, 'all');
     }
 
     async pauseAllOrderers(): Promise<void> {
-        // TODO
+        await this.stopAllOrderers(false);
     }
 
     async unpauseAllOrderers(): Promise<void> {
-        // TODO
+        await this.restartStoppedContainers('unpause', 'orderer', undefined, 'all');
     }
 
     async sleep(params: string[]): Promise<void> {
-        this.logPoint(`sleeping for ${params[0]}`);
+        Logger.logPoint('Running', `sleeping for ${params[0]}`);
         return new Promise(resolve => setTimeout(resolve, parseInt(params[0])));
     }
 }
