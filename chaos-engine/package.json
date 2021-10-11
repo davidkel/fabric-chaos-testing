@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/start.js ./scenarios peer0.org1.example.com",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build-docker": "docker build . -t chaos:latest"
   },
   "devDependencies": {
     "@tsconfig/node12": "^1.0.9",

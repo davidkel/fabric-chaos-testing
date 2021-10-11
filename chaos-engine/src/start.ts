@@ -2,11 +2,8 @@ import sourceMapSupport from 'source-map-support'
 sourceMapSupport.install()
 
 import {ScenarioRunner} from './scenariorunner'
-import {Logger} from './logger';
 
-//TODO: Make configurable
-const MIN_DELAY_IN_MILLISECONDS = 100;
-const MAX_DELAY_IN_MILLISECONDS = 1000;
+const INTERVAL_SCENARIO = '_interval';
 
 let keepRunning = true;
 process.on('SIGINT', () => {
@@ -14,25 +11,26 @@ process.on('SIGINT', () => {
     keepRunning = false;
 });
 
-const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
 (async () => {
     const scenarioRunner = new ScenarioRunner(process.argv[2], process.argv[3]);
 
     try {
-        await scenarioRunner.loadScenarios();
+        await scenarioRunner.loadScenarios(INTERVAL_SCENARIO);
         const scenarioNames = scenarioRunner.getScenarioNames();
+
+        if (scenarioNames.length === 0) {
+            throw new Error(`No scenarios found in ${process.argv[2]}`);
+        }
 
         while (keepRunning) {
             const scenarioIndex = Math.round(Math.random() * (scenarioNames.length - 1));
             await scenarioRunner.runScenario(scenarioNames[scenarioIndex]);
 
-            if (keepRunning) {
-                const delay = Math.round(Math.random() * (MAX_DELAY_IN_MILLISECONDS - MIN_DELAY_IN_MILLISECONDS)) + MIN_DELAY_IN_MILLISECONDS;
-                Logger.logPoint('', `sleeping for ${delay}ms before starting next scenario`);
-                await sleep(delay);
+            if (keepRunning && scenarioRunner.scenarioExists(INTERVAL_SCENARIO)) {
+                await scenarioRunner.runScenario(INTERVAL_SCENARIO);
             }
         }
+
     } catch(error) {
         console.log(error);
         console.log('Terminating due to error');

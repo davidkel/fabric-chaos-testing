@@ -48,12 +48,13 @@ stepMapper.set('sleep', 'sleep');
 export class ScenarioRunner {
 
     private loadedScenarios: Map<string, Scenario> = new Map<string, Scenario>();
+    private scenarioNames: string[] = [];
 
     constructor(private readonly scenariodir: string,
                 private readonly gatewayPeer: string) {
     }
 
-    async loadScenarios(): Promise<void> {
+    async loadScenarios(intervalName: string): Promise<void> {
         const scenarioFiles = await fs.readdir(this.scenariodir);
         for (const scenarioFile of scenarioFiles) {
             if (scenarioFile.toLowerCase().endsWith('.yaml')) {
@@ -64,16 +65,22 @@ export class ScenarioRunner {
                 this.loadedScenarios.set(scenario.name, scenario);
             }
         }
+        this.scenarioNames = Array.from(this.loadedScenarios.keys());
+        console.log(this.scenarioNames);
+        const indexOfInterval = this.scenarioNames.indexOf(intervalName);
+        if (indexOfInterval !== -1) {
+            this.scenarioNames.splice(indexOfInterval, 1);
+        }
     }
 
     getScenarioNames(): string[] {
-        return Array.from(this.loadedScenarios.keys());
+        return this.scenarioNames;
     }
 
     async runScenario(scenarioName: string) {
         const scenario = this.loadedScenarios.get(scenarioName);
         const nodeManager = new NodeManager(this.gatewayPeer);
-        Logger.logPoint('Start', `running scenario ${scenarioName}:${scenario?.description}`);
+        Logger.logPoint('Start', `running scenario ${scenario?.description}`);
 
         for (const step of scenario!.steps) {
             const actionAndParameters = step.split(' ');
@@ -87,7 +94,7 @@ export class ScenarioRunner {
             await toInvoke.call(nodeManager, actionAndParameters);
         }
 
-        Logger.logPoint('End', `scenario ${scenarioName}:${scenario?.description} completed successfully`);
+        Logger.logPoint('End', `scenario ${scenario?.description} completed successfully`);
     }
 
     private valiateSenario(scenario: Scenario, scenarioPath: string) {
@@ -104,7 +111,13 @@ export class ScenarioRunner {
             const stepMethod = stepMapper.get(actionAndParameters[0].toLowerCase() as Steps);
             if (!stepMethod) {
                 throw new Error(`${scenarioPath} has unknown step called ${actionAndParameters[0]} defined`);
+            } else {
+                NodeManager.validateStep(stepMethod, actionAndParameters);
             }
         }
+    }
+
+    scenarioExists(scenarioName: string) {
+        return this.loadedScenarios.get(scenarioName) !== undefined;
     }
 }

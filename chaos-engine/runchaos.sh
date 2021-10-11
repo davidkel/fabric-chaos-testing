@@ -1,0 +1,1 @@
+docker run --rm -it --volume=/var/run/docker.sock:/var/run/docker.sock chaos:latest npm start

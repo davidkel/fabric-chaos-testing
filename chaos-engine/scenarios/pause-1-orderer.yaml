@@ -1,0 +1,7 @@
+name: PauseOneOrderer
+description: Pause and Unpause an Orderer
+steps:
+  - pauseorderer
+  - sleep random[1000,5000]
+  - unpauseorderer
+  - sleep 5000

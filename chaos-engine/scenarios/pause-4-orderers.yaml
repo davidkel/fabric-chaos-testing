@@ -1,0 +1,13 @@
+name: PauseFourOrderers
+description: Pause And Unpause Four Orderers
+steps:
+  - pauseorderer
+  - pauseorderer
+  - pauseorderer
+  - pauseorderer
+  - sleep 10000
+  - unpauseorderer
+  - unpauseorderer
+  - unpauseorderer
+  - unpauseorderer
+  - sleep 10000

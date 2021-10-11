@@ -247,7 +247,38 @@ export class NodeManager {
     }
 
     async sleep(params: string[]): Promise<void> {
-        Logger.logPoint('Running', `sleeping for ${params[0]}`);
-        return new Promise(resolve => setTimeout(resolve, parseInt(params[0])));
+        let ms = params[0].toLowerCase();
+        let delay: number;
+
+        if (ms.startsWith('random[')) {
+            const randomRange = ms.substr(7, ms.length - 8).split(',');
+            delay = Math.round(Math.random() * (parseInt(randomRange[1]) - parseInt(randomRange[0]))) + parseInt(randomRange[0]);
+        } else {
+            delay = parseInt(params[0]);
+            if (delay === NaN) {
+                delay = 1000;
+            }
+        }
+
+        Logger.logPoint('Running', `sleeping for ${delay}`);
+        return new Promise(resolve => setTimeout(resolve, delay));
+    }
+
+    static validateStep(stepMethod: string, actionAndParameters: string[]) {
+        if (stepMethod === 'sleep') {
+
+            if (!actionAndParameters[1]) {
+                throw new Error(`${actionAndParameters[0]} requires a parameter`);
+            }
+
+            if (actionAndParameters[1].startsWith('random[')) {
+                const randomRange = actionAndParameters[1].substr(7, actionAndParameters[1].length - 8).split(',');
+                if (randomRange.length != 2 || parseInt(randomRange[0]) === NaN || parseInt(randomRange[1]) === NaN) {
+                    throw new Error(`${actionAndParameters[0]} parameter is not a valid random declaration`);
+                }
+            } else if (parseInt(actionAndParameters[1]) === NaN) {
+                throw new Error(`${actionAndParameters[0]} parameter is not a number`);
+            }
+        }
     }
 }

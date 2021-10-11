@@ -1,7 +1,7 @@
 name: StopAndRestartGateway
-description: TBD
+description: Pause and unpause Gateway
 steps:
   - pausegateway
-  - sleep 10000
+  - sleep 5000
   - unpausegateway
   - sleep 5000
