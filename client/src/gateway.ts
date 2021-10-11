@@ -11,7 +11,7 @@ import * as crypto from 'crypto';
 
 import * as config from './utils/config';
 
-interface orgProfile {
+export interface OrgProfile {
     keyPath: string;
     certPath: string;
     tlsCertPath: string;
@@ -20,32 +20,26 @@ interface orgProfile {
 
 export class GatewayHelper{
 
-    private static gateway: Gateway;
-    private static client: grpc.Client;
-    private static org: orgProfile
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    private constructor() {
+    gateway!: Gateway;
+    client!: grpc.Client;
+    org: OrgProfile;
 
-    }
-    static async getInstance(org:orgProfile):Promise<Gateway>{
-        if(!this.gateway ){
-            await this.configureGateway(org)
-        }
-        return this.gateway;
-    }
-
-    private static async configureGateway(org:orgProfile):Promise<void>{
+    constructor(org: OrgProfile) {
         this.org = org
+    }
+
+    async configureGateway():Promise<Gateway>{
         this.client = await this.newGrpcConnection(this.org.tlsCertPath);
         this.gateway = connect({
             client:this.client,
             identity: await this.newIdentity(this.org.certPath,this.org.mspID),
             signer: await this.newSigner(this.org.keyPath),
         });
+        return this.gateway;
     }
 
 
-    private static async  newGrpcConnection(tlsCertPath: string): Promise<grpc.Client> {
+    private  async  newGrpcConnection(tlsCertPath: string): Promise<grpc.Client> {
         const tlsRootCert = await fs.readFile(
             tlsCertPath
         );
@@ -56,7 +50,7 @@ export class GatewayHelper{
         });
     }
 
-    private static async  newIdentity(certPath: string,mspId:string): Promise<Identity> {
+    private  async  newIdentity(certPath: string,mspId:string): Promise<Identity> {
         const credentials = await fs.readFile(
             certPath
         );
@@ -66,7 +60,7 @@ export class GatewayHelper{
         };
     }
 
-    private static async  newSigner(keyPath: string): Promise<Signer> {
+    private  async  newSigner(keyPath: string): Promise<Signer> {
         const privateKeyPem = await fs.readFile(
             keyPath
         );
