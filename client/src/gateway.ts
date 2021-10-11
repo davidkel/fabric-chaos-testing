@@ -8,6 +8,7 @@ import {
 import * as grpc from '@grpc/grpc-js';
 import { promises as fs } from 'fs';
 import * as crypto from 'crypto';
+
 import * as config from './utils/config';
 
 interface orgProfile {
@@ -33,7 +34,7 @@ export class GatewayHelper{
         return this.gateway;
     }
 
-    private static async configureGateway(org:orgProfile){
+    private static async configureGateway(org:orgProfile):Promise<void>{
         this.org = org
         this.client = await this.newGrpcConnection(this.org.tlsCertPath);
         this.gateway = connect({
