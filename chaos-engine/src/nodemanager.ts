@@ -230,7 +230,7 @@ export class NodeManager {
     async stopAllOrderers(stop = true): Promise<void> {
         const orderers = await this.getAllOrdererContainers();
         for (const orderer of orderers) {
-            await this.stopContainer(orderer, stop ? 'stop' : 'pause', 'peer');
+            await this.stopContainer(orderer, stop ? 'stop' : 'pause', 'orderer');
         }
     }
 

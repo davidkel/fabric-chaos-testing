@@ -12,9 +12,9 @@ export class Logger {
         const timestamp = new Date().toISOString();
         const logMessage: ChaosLogMessage = {
             component: 'CHAOS',
+            timestamp,
             scenarioStatus,
-            message,
-            timestamp
+            message
         }
 
         console.log(JSON.stringify(logMessage));

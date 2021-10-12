@@ -3,6 +3,7 @@
  */
 
 import { Context, Contract } from 'fabric-contract-api';
+import { chown } from 'fs';
 import { ChaosAsset } from './chaos-asset';
 import {Logger} from './logger';
 
@@ -22,10 +23,10 @@ export class ChaosAssetContract extends Contract {
     }
 
     public async createChaosAsset(ctx: Context, chaosAssetId: string, value: string): Promise<void> {
-        const exists = await this.chaosAssetExists(ctx, chaosAssetId);
-        if (exists) {
-            throw new Error(`The chaos asset ${chaosAssetId} already exists`);
-        }
+        // const exists = await this.chaosAssetExists(ctx, chaosAssetId);
+        // if (exists) {
+        //     throw new Error(`The chaos asset ${chaosAssetId} already exists`);
+        // }
         const chaosAsset = new ChaosAsset();
         chaosAsset.value = value;
         const buffer = Buffer.from(JSON.stringify(chaosAsset));
@@ -35,7 +36,9 @@ export class ChaosAssetContract extends Contract {
     public async readChaosAsset(ctx: Context, chaosAssetId: string): Promise<ChaosAsset> {
         const exists = await this.chaosAssetExists(ctx, chaosAssetId);
         if (!exists) {
-            throw new Error(`The chaos asset ${chaosAssetId} does not exist`);
+            const noChaosAsset = new ChaosAsset();
+            noChaosAsset.value = `The chaos asset ${chaosAssetId} does not exist`;
+            return noChaosAsset;
         }
         const data = await ctx.stub.getState(chaosAssetId);
         const chaosAsset = JSON.parse(data.toString()) as ChaosAsset;
@@ -43,10 +46,10 @@ export class ChaosAssetContract extends Contract {
     }
 
     public async updateChaosAsset(ctx: Context, chaosAssetId: string, newValue: string): Promise<void> {
-        const exists = await this.chaosAssetExists(ctx, chaosAssetId);
-        if (!exists) {
-            throw new Error(`The chaos asset ${chaosAssetId} does not exist`);
-        }
+        // const exists = await this.chaosAssetExists(ctx, chaosAssetId);
+        // if (!exists) {
+        //     throw new Error(`The chaos asset ${chaosAssetId} does not exist`);
+        // }
         const chaosAsset = new ChaosAsset();
         chaosAsset.value = newValue;
         const buffer = Buffer.from(JSON.stringify(chaosAsset));
@@ -54,10 +57,10 @@ export class ChaosAssetContract extends Contract {
     }
 
     public async deleteChaosAsset(ctx: Context, chaosAssetId: string): Promise<void> {
-        const exists = await this.chaosAssetExists(ctx, chaosAssetId);
-        if (!exists) {
-            throw new Error(`The chaos asset ${chaosAssetId} does not exist`);
-        }
+        // const exists = await this.chaosAssetExists(ctx, chaosAssetId);
+        // if (!exists) {
+        //     throw new Error(`The chaos asset ${chaosAssetId} does not exist`);
+        // }
         await ctx.stub.deleteState(chaosAssetId);
     }
 
