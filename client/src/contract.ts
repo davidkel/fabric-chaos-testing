@@ -34,15 +34,15 @@ export class CCHelper {
       const opts: ProposalOptions = {
           arguments: args,
       };
-      console.log('create new proposal');
+
 
       const proposal = this.createProposal(func, opts);
 
-      console.log('getTxnid');
+
       if(proposal){
           const txnID = proposal.getTransactionId();
           const txn = await this.endorse(txnID, proposal);
-          console.log('submit');
+
           if(txn){
               await this.submit(txn);
           }
