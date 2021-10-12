@@ -1,6 +1,13 @@
-import { logger } from './utils/logger';
+import { Logger } from './utils/logger';
 
-import { Contract, Gateway, Network, ProposalOptions } from 'fabric-gateway';
+import {
+    Contract,
+    Gateway,
+    Network,
+    Proposal,
+    ProposalOptions,
+    Transaction,
+} from 'fabric-gateway';
 
 export class CCHelper {
   contract: Contract;
@@ -10,10 +17,7 @@ export class CCHelper {
 
   constructor(gateway: Gateway, channel: string, chaincode: string) {
       this.network = gateway.getNetwork(channel);
-      logger.info(
-          'Created a network instance based on channel %s for user ',
-          channel
-      );
+
       this.contract = this.network.getContract(chaincode);
   }
 
@@ -25,36 +29,56 @@ export class CCHelper {
       return this.network;
   }
 
+
   async submitTransaction(func: string, args: string[]): Promise<void> {
-      try {
-          logger.info('To invoke chaincode %s ', this.contract.getChaincodeId());
-          const opts: ProposalOptions = {
-              arguments: args,
-          };
-          const proposal = this.contract.newProposal(func, opts);
-          logger.info('Created proposal for transaction CreatecreateChaosAsset');
+      const opts: ProposalOptions = {
+          arguments: args,
+      };
+      console.log('create new proposal');
+
+      const proposal = this.createProposal(func, opts);
+
+      console.log('getTxnid');
+      if(proposal){
           const txnID = proposal.getTransactionId();
-
-          logger.info('About to endorse transaction ');
-          const txn = await proposal.endorse();
-          logger.info('Endorsement successful for transactionID: %s', txnID);
-
-          logger.info(`Received endorsed, broadcast to orderer for txnid ${txnID}`);
-          const subtx = await txn.submit();
-          logger.info(`Transaction submitted for txnID: ${txnID}`);
-
-          const stat = await subtx.getStatus();
-          logger.info(`Transaction status for txnID: ${txnID} status:%s`, stat);
-
-
-      } catch (e) {
-          logger.error('Error invoking chaincode', e);
+          const txn = await this.endorse(txnID, proposal);
+          console.log('submit');
+          if(txn){
+              await this.submit(txn);
+          }
       }
+
   }
 
   async evaluateTransaction(func: string, args: string[]): Promise<void> {
-      const result = await this.contract.evaluateTransaction(func, ...args);
-      logger.info(Buffer.from(result).toString());
-      logger.info('Received asset %s', Buffer.from(result).toString());
+      try {
+          await this.contract.evaluateTransaction(func, ...args);
+      } catch (e: any) {
+          Logger.logPoint(false, 'ErrorEvaluatingTransaction', `${e?.message}`);
+      }
+  }
+
+  createProposal(func: string, opts: ProposalOptions): Proposal|void {
+      try {
+          return this.contract.newProposal(func, opts);
+      } catch (e: any) {
+          Logger.logPoint(false, 'ErrorCreatingProposal', e.message);
+      }
+  }
+  async endorse(txnID: string, proposal: Proposal): Promise<Transaction|void> {
+      try {
+          const txn = await proposal.endorse();
+          return txn;
+      } catch (e: any) {
+          Logger.logPoint(false, 'ErrorWhileEndorsement', e.message, txnID);
+      }
+  }
+
+  async submit(txn: Transaction): Promise<void> {
+      try {
+          await txn.submit();
+      } catch (e: any) {
+          Logger.logPoint(false, 'ErrorSubmittingToOrderer', e.message);
+      }
   }
 }
