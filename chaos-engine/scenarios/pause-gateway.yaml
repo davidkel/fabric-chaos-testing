@@ -1,7 +1,0 @@
-name: StopAndRestartGateway
-description: Pause and unpause Gateway
-steps:
-  - pausegateway
-  - sleep 5000
-  - unpausegateway
-  - sleep 5000

@@ -1,7 +1,0 @@
-name: PauseAllOrderers
-description: Pause and Unpause all orderers
-steps:
-  - pauseallorderers
-  - sleep 10000
-  - unpauseallorderers
-  - sleep 10000

@@ -13,7 +13,7 @@ export class NodeManager {
     private docker: Dockerode;
     private stoppedContainers: ContainerInfo[] = [];
 
-    constructor(private readonly gatewayPeer: string) {
+    constructor(private readonly gatewayPeer: string, private readonly scenarioName: string) {
         this.docker = new Dockerode();
     }
 
@@ -26,7 +26,7 @@ export class NodeManager {
             }
         }
 
-        Logger.logPoint('Running', `Gateway peer ${this.gatewayPeer} paused or not found`);
+        Logger.logPoint('Running', this.scenarioName, `Gateway peer ${this.gatewayPeer} paused or not found`);
         return null;
     }
 
@@ -65,16 +65,16 @@ export class NodeManager {
 
     private async stopContainer(containerInfo: ContainerInfo, stop: StopType, containerType: ContainerType) {
         const containerName = containerInfo.Names[0].substr(1);
-        Logger.logPoint('Running', `${stop === 'stop' ? 'stopping' : 'pausing'} ${containerType} ${containerName} ${containerInfo.Id}`);
+        Logger.logPoint('Running', this.scenarioName, `${stop === 'stop' ? 'stopping' : 'pausing'} ${containerType} ${containerName} ${containerInfo.Id}`);
         const container = this.docker.getContainer(containerInfo.Id);
         await (stop === 'stop' ? container.stop() : container.pause());
-        Logger.logPoint('Running', `${stop === 'stop'? 'stopped' : 'paused'}  ${containerType} ${containerName} ${containerInfo.Id}`);
+        Logger.logPoint('Running', this.scenarioName, `${stop === 'stop'? 'stopped' : 'paused'}  ${containerType} ${containerName} ${containerInfo.Id}`);
         this.stoppedContainers.push(containerInfo);
     }
 
     private async restartStoppedContainers(start: StartType, containerType: ContainerType, org: string | undefined = undefined, restartType: RestartCount = 'first') {
         if (this.stoppedContainers.length === 0) {
-            Logger.logPoint('Running', 'No containers to start');
+            Logger.logPoint('Running', this.scenarioName, 'No containers to start');
             return;
         }
 
@@ -106,15 +106,15 @@ export class NodeManager {
         }
 
         if (containersToStart.length === 0) {
-            Logger.logPoint('Running', 'No container found to start');
+            Logger.logPoint('Running', this.scenarioName, 'No container found to start');
         }
 
         for (const containerToStart of containersToStart) {
             containerName = containerToStart.Names[0].substr(1).toLowerCase();
-            Logger.logPoint('Running', `${start === 'restart' ? 'restarting' : 'unpausing'} ${containerType} ${containerName} ${containerToStart!.Id}`);
+            Logger.logPoint('Running', this.scenarioName, `${start === 'restart' ? 'restarting' : 'unpausing'} ${containerType} ${containerName} ${containerToStart!.Id}`);
             const container = this.docker.getContainer(containerToStart!.Id);
             await (start === 'restart' ? container.start() : container.unpause());
-            Logger.logPoint('Running', `${start === 'restart' ? 'restarted' : 'unpaused'} ${containerType} ${containerName} ${containerToStart!.Id}`);
+            Logger.logPoint('Running', this.scenarioName, `${start === 'restart' ? 'restarted' : 'unpaused'} ${containerType} ${containerName} ${containerToStart!.Id}`);
             const indexOfContainer = this.stoppedContainers.indexOf(containerToStart);
             this.stoppedContainers.splice(indexOfContainer, 1);
         }
@@ -156,9 +156,9 @@ export class NodeManager {
 
         if (peers.length === 0) {
             if (organisation) {
-                Logger.logPoint('Running', `No running non gateway peers for ${organisation} found`)
+                Logger.logPoint('Running', this.scenarioName, `No running non gateway peers for ${organisation} found`)
             } else {
-                Logger.logPoint('Running', `No running non gateway peers found`)
+                Logger.logPoint('Running', this.scenarioName, `No running non gateway peers found`)
             }
             return;
         }
@@ -206,7 +206,7 @@ export class NodeManager {
         const orderers = await this.getAllOrdererContainers();
 
         if (orderers.length === 0) {
-            Logger.logPoint('Running', 'No running orderers found');
+            Logger.logPoint('Running', this.scenarioName, 'No running orderers found');
             return;
         }
 
@@ -260,7 +260,7 @@ export class NodeManager {
             }
         }
 
-        Logger.logPoint('Running', `sleeping for ${delay}`);
+        Logger.logPoint('Running', this.scenarioName, `sleeping for ${delay}`);
         return new Promise(resolve => setTimeout(resolve, delay));
     }
 

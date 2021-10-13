@@ -1,7 +1,0 @@
-name: PauseUnpauseOrg2
-description: Pause and Unpause all peers in Org 2
-steps:
-  - pauseallpeers org2
-  - sleep 5000
-  - unpauseallpeers
-  - sleep 2000
