@@ -1,4 +1,4 @@
-import { Logger } from './utils/logger';
+import { ClientAction, Logger } from './utils/logger';
 
 import {
     Contract,
@@ -6,6 +6,7 @@ import {
     Network,
     Proposal,
     ProposalOptions,
+    SubmittedTransaction,
     Transaction,
 } from 'fabric-gateway';
 
@@ -21,6 +22,22 @@ export class CCHelper {
       this.contract = this.network.getContract(chaincode);
   }
 
+  async executeWithLog(callback:()=>Proposal|Promise<Transaction>|Promise<SubmittedTransaction>,msg:ClientAction,txnID?:string):Promise<Proposal|Transaction|SubmittedTransaction|void>{
+      try{
+          const result = callback();
+          if(result instanceof Promise){
+              const resolved = await result;
+              return resolved;
+          }else{
+              return result;
+          }
+
+      }catch(e:any){
+          Logger.logPoint(false,msg,e?.message,txnID)
+      }
+
+  }
+
   getContract(): Contract {
       return this.contract;
   }
@@ -34,19 +51,16 @@ export class CCHelper {
       const opts: ProposalOptions = {
           arguments: args,
       };
-
-
-      const proposal = this.createProposal(func, opts);
-
-
+      const proposal:Proposal = await this.executeWithLog(()=> this.contract.newProposal(func, opts),'ErrorCreatingProposal') as Proposal;
       if(proposal){
           const txnID = proposal.getTransactionId();
-          const txn = await this.endorse(txnID, proposal);
-
+          const txn = await this.executeWithLog(()=>proposal.endorse(),'ErrorWhileEndorsement',txnID) as Transaction;
           if(txn){
-              await this.submit(txn);
+              await this.executeWithLog(()=>txn.submit(),'ErrorSubmittingToOrderer',txnID);
           }
+
       }
+
 
   }
 
@@ -58,27 +72,6 @@ export class CCHelper {
       }
   }
 
-  createProposal(func: string, opts: ProposalOptions): Proposal|void {
-      try {
-          return this.contract.newProposal(func, opts);
-      } catch (e: any) {
-          Logger.logPoint(false, 'ErrorCreatingProposal', e.message);
-      }
-  }
-  async endorse(txnID: string, proposal: Proposal): Promise<Transaction|void> {
-      try {
-          const txn = await proposal.endorse();
-          return txn;
-      } catch (e: any) {
-          Logger.logPoint(false, 'ErrorWhileEndorsement', e.message, txnID);
-      }
-  }
-
-  async submit(txn: Transaction): Promise<void> {
-      try {
-          await txn.submit();
-      } catch (e: any) {
-          Logger.logPoint(false, 'ErrorSubmittingToOrderer', e.message);
-      }
-  }
 }
+
+
