@@ -1,0 +1,7 @@
+name: StopOneOrderer
+description: Stop and Restart an Orderer
+steps:
+  - stoporderer
+  - sleep random[1000,5000]
+  - stoporderer
+  - sleep 5000

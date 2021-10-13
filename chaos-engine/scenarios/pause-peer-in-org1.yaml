@@ -1,7 +1,0 @@
-name: PauseAndNonGateway
-description: Pause and Unpause non gateway peer in Org1
-steps:
-  - pausepeer org1
-  - sleep 5000
-  - unpausepeer
-  - sleep 2000

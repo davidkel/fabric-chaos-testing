@@ -66,7 +66,13 @@ export class ScenarioRunner {
             }
         }
         this.scenarioNames = Array.from(this.loadedScenarios.keys());
-        console.log(this.scenarioNames);
+
+        console.log('---- Loaded Scenarios ----');
+        for (const scenarioName of this.scenarioNames) {
+            console.log(scenarioName);
+        }
+        console.log('--------------------------');
+
         const indexOfInterval = this.scenarioNames.indexOf(intervalName);
         if (indexOfInterval !== -1) {
             this.scenarioNames.splice(indexOfInterval, 1);
@@ -79,8 +85,8 @@ export class ScenarioRunner {
 
     async runScenario(scenarioName: string) {
         const scenario = this.loadedScenarios.get(scenarioName);
-        const nodeManager = new NodeManager(this.gatewayPeer);
-        Logger.logPoint('Start', `running scenario ${scenario?.description}`);
+        const nodeManager = new NodeManager(this.gatewayPeer, scenarioName);
+        Logger.logPoint('Start', scenarioName, `running scenario ${scenario?.description}`);
 
         for (const step of scenario!.steps) {
             const actionAndParameters = step.split(' ');
@@ -94,7 +100,7 @@ export class ScenarioRunner {
             await toInvoke.call(nodeManager, actionAndParameters);
         }
 
-        Logger.logPoint('End', `scenario ${scenario?.description} completed successfully`);
+        Logger.logPoint('End', scenarioName, `scenario ${scenario?.description} completed successfully`);
     }
 
     private valiateSenario(scenario: Scenario, scenarioPath: string) {

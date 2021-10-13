@@ -1,0 +1,13 @@
+name: StopFourOrderers
+description: Stop And Restart Four Orderers
+steps:
+  - stoporderer
+  - stoporderer
+  - stoporderer
+  - stoporderer
+  - sleep 10000
+  - restartorderer
+  - restartorderer
+  - restartorderer
+  - restartorderer
+  - sleep 10000

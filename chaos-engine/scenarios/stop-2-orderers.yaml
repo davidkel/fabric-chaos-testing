@@ -1,0 +1,9 @@
+name: StopTwoOrderers
+description: Stop And Restart Two Orderers
+steps:
+  - stoporderer
+  - stoporderer
+  - sleep 5000
+  - restartorderer
+  - restartorderer
+  - sleep 5000

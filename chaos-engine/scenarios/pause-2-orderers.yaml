@@ -1,9 +1,0 @@
-name: PauseTwoOrderers
-description: Pause And Unpause Two Orderers
-steps:
-  - pauseorderer
-  - pauseorderer
-  - sleep 5000
-  - unpauseorderer
-  - unpauseorderer
-  - sleep 5000
