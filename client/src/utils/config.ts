@@ -17,10 +17,10 @@ export const ORG = env
     .asString()
 
 
-export const TRANSACTION_COUNT = env
-    .get('TRANSACTION_COUNT')
+export const MAX_UNFINISHED_TRANSACTION_COUNT = env
+    .get('MAX_TRANSACTION_COUNT')
     .required()
-    .default(20)
+    .default(5)
     .asIntPositive()
 
 export const CHAINCODE_DATA = env
@@ -46,7 +46,6 @@ export const chaincodeName = env
     .default('basic')
     .asString();
 
-export const batchInterval = env.get('BATCH_INTERVAL').default(2000).asIntPositive();
 
 
 export const gatewayPeer = env
@@ -54,5 +53,6 @@ export const gatewayPeer = env
     .asString();
 
 
-
-
+export const maxLimit = env.get('MAXLIMIT').default(500).asIntPositive();
+export const minLimit = env.get('MINLIMIT').default(50).asIntPositive();
+export const timeout = env.get('TIMEOUT').default(2000).asIntPositive();
