@@ -21,7 +21,7 @@
   "dependencies": {
     "dotenv": "^10.0.0",
     "env-var": "^7.0.1",
-    "fabric-gateway": "0.1.0-dev.20210929.7",
+    "fabric-gateway": "unstable",
     "winston": "^3.3.3"
   }
 }
