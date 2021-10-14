@@ -1,1 +1,1 @@
-docker run --rm -it --volume=/var/run/docker.sock:/var/run/docker.sock chaos:latest npm start
+docker run --rm -it --volume=/var/run/docker.sock:/var/run/docker.sock chaos:latest node dist/start.js $1 $2 $3

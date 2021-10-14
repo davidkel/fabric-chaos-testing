@@ -21,11 +21,11 @@ process.on('SIGINT', () => {
 (async () => {
     const scenarioRunner = new ScenarioRunner(process.argv[2], process.argv[3]);
     let mode = process.argv[4] as ChaosMode;
-    mode.toLowerCase();
     let singleScenario = process.argv[4];
     if (!mode) {
         mode = 'random';
     }
+    mode.toLowerCase();
 
     try {
         await scenarioRunner.loadScenarios(INTERVAL_SCENARIO);
