@@ -28,7 +28,6 @@ export class Logger {
           message
       };
       this.logEntries.push(logMessage)
-      console.log('loglevel',this.logLevel)
       if(this.logLevel === 'logOnlyOnFailure'){
           if (stage === 'Failed') {
               for (const logEntry of this.logEntries) {
