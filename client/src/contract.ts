@@ -1,43 +1,28 @@
-import { ClientAction, Logger } from './utils/logger';
-
+import * as config from './utils/config';
 import {
     Contract,
     Gateway,
     Network,
-    Proposal,
     ProposalOptions,
-    SubmittedTransaction,
-    Transaction,
 } from 'fabric-gateway';
+import { TransactionDescriptor } from './transactionData';
+import { promiseTimeout } from './utils/helper';
 
 export class CCHelper {
   contract: Contract;
   network: Network;
   channel = '';
   chaincode = '';
+  unfinishedTransactions = 0;
 
   constructor(gateway: Gateway, channel: string, chaincode: string) {
       this.network = gateway.getNetwork(channel);
-
       this.contract = this.network.getContract(chaincode);
   }
 
-  async executeWithLog(callback:()=>Proposal|Promise<Transaction>|Promise<SubmittedTransaction>,msg:ClientAction,txnID?:string):Promise<Proposal|Transaction|SubmittedTransaction|void>{
-      try{
-          const result = callback();
-          if(result instanceof Promise){
-              const resolved = await result;
-              return resolved;
-          }else{
-              return result;
-          }
-
-      }catch(e:any){
-          Logger.logPoint(false,msg,e?.message,txnID)
-      }
-
+  getUnfinishedTransactions(): number {
+      return this.unfinishedTransactions;
   }
-
   getContract(): Contract {
       return this.contract;
   }
@@ -45,30 +30,71 @@ export class CCHelper {
   getNetwork(): Network {
       return this.network;
   }
+  async runTransaction(transactionData:TransactionDescriptor):Promise<void>{
+      console.log('transction called',transactionData.type)
+      if(transactionData.type === 'submit'){
+          await this.submitTransaction(transactionData.name,transactionData.params)
+      }else{
+          await this.evaluateTransaction(transactionData.name,transactionData.params)
+      }
 
+  }
 
-  async submitTransaction(func: string, args: string[]): Promise<void> {
-      const opts: ProposalOptions = {
-          arguments: args,
-      };
-      const proposal:Proposal = await this.executeWithLog(()=> this.contract.newProposal(func, opts),'ErrorCreatingProposal') as Proposal;
-      if(proposal){
+  private async submitTransaction(func: string, args: string[]): Promise<void> {
+      try{
+          const opts: ProposalOptions = {
+              arguments: args,
+          };
+          const proposal = this.contract.newProposal(func, opts)
+          console.log('proposal',proposal);
           const txnID = proposal.getTransactionId();
-          const txn = await this.executeWithLog(()=>proposal.endorse(),'ErrorWhileEndorsement',txnID) as Transaction;
-          if(txn){
-              await this.executeWithLog(()=>txn.submit(),'ErrorSubmittingToOrderer',txnID);
+          this.unfinishedTransactions++;
+          console.log('txn',txnID);
+          const txn = await proposal.endorse();
+          console.log('txn',txn)
+          const subtx = await txn.submit()
+
+          const status = await promiseTimeout(config.timeout,()=>subtx.getStatus());
+
+          if (status.code !== 11 && status.code !== 12 && status.code !== 0) {
+              // 0 = OK
+              // 10 = endorsement_policy_failure
+              // 11 = mvcc_read_conflict
+              // 12 = phantom read error
+              //
+              // 0,11,12 are ok. 10 would indicate a possible gateway problem
+              // all the others shouldn't happen but we will want to know if they do
+              throw new Error(`unexpected validation code ${status.code}`);
           }
 
+
+      }catch(e){
+          //log
+
+      }finally{
+          this.unfinishedTransactions--
       }
+
 
 
   }
 
-  async evaluateTransaction(func: string, args: string[]): Promise<void> {
+  private async evaluateTransaction(func: string, args: string[]): Promise<void> {
       try {
-          await this.contract.evaluateTransaction(func, ...args);
-      } catch (e: any) {
-          Logger.logPoint(false, 'ErrorEvaluatingTransaction', `${e?.message}`);
+          const opts: ProposalOptions = {
+              arguments: args
+          };
+          const proposal = this.contract.newProposal(func, opts);
+
+          try {
+              await proposal.evaluate();
+          } catch(error) {
+              //log
+          } finally {
+              this.unfinishedTransactions--;
+          }
+      } catch (e) {
+          //   Logger.logPoint(false, 'ErrorEvaluatingTransaction', `${(e as Error).message}`);
       }
   }
 
