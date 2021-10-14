@@ -17,7 +17,7 @@ export function promiseTimeout(
     return new Promise((resolve, reject) => {
 
         const timer = setTimeout(() => {
-            reject(new Error(`Promise timed out after ${timeout} ms for txnID`));
+            reject(new Error(`Promise timed out after ${timeout} ms`));
         }, timeout);
 
         callback()

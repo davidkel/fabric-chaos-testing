@@ -8,6 +8,9 @@ import {
 import { TransactionDescriptor } from './transactionData';
 import { promiseTimeout } from './utils/helper';
 
+import { Logger } from './utils/logger';
+
+
 export class CCHelper {
   contract: Contract;
   network: Network;
@@ -31,7 +34,6 @@ export class CCHelper {
       return this.network;
   }
   async runTransaction(transactionData:TransactionDescriptor):Promise<void>{
-      console.log('transction called',transactionData.type)
       if(transactionData.type === 'submit'){
           await this.submitTransaction(transactionData.name,transactionData.params)
       }else{
@@ -41,21 +43,25 @@ export class CCHelper {
   }
 
   private async submitTransaction(func: string, args: string[]): Promise<void> {
+
+      const opts: ProposalOptions = {
+          arguments: args,
+      };
+      const proposal = this.contract.newProposal(func, opts)
+      const txnID = proposal.getTransactionId();
+      this.unfinishedTransactions++;
+
+
+      const logger = new Logger(txnID,config.logLevel)
+
       try{
-          const opts: ProposalOptions = {
-              arguments: args,
-          };
-          const proposal = this.contract.newProposal(func, opts)
-          console.log('proposal',proposal);
-          const txnID = proposal.getTransactionId();
-          this.unfinishedTransactions++;
-          console.log('txn',txnID);
+
+          logger.logPoint('Endorsing');
           const txn = await proposal.endorse();
-          console.log('txn',txn)
-          const subtx = await txn.submit()
-
+          logger.logPoint('Submitting')
+          const subtx = await txn.submit();
+          logger.logPoint('Submitted')
           const status = await promiseTimeout(config.timeout,()=>subtx.getStatus());
-
           if (status.code !== 11 && status.code !== 12 && status.code !== 0) {
               // 0 = OK
               // 10 = endorsement_policy_failure
@@ -68,8 +74,11 @@ export class CCHelper {
           }
 
 
+
       }catch(e){
-          //log
+
+
+          logger.logPoint('Failed',(e as Error).message)
 
       }finally{
           this.unfinishedTransactions--
@@ -80,21 +89,22 @@ export class CCHelper {
   }
 
   private async evaluateTransaction(func: string, args: string[]): Promise<void> {
-      try {
-          const opts: ProposalOptions = {
-              arguments: args
-          };
-          const proposal = this.contract.newProposal(func, opts);
 
-          try {
-              await proposal.evaluate();
-          } catch(error) {
-              //log
-          } finally {
-              this.unfinishedTransactions--;
-          }
-      } catch (e) {
-          //   Logger.logPoint(false, 'ErrorEvaluatingTransaction', `${(e as Error).message}`);
+      const opts: ProposalOptions = {
+          arguments: args
+      };
+      const proposal = this.contract.newProposal(func, opts);
+      const txnId = proposal.getTransactionId();
+      const logger = new Logger(txnId,config.logLevel)
+      logger.logPoint('Evaluating');
+      try {
+          this.unfinishedTransactions++;
+          await proposal.evaluate();
+          logger.logPoint('Evaluated');
+      } catch(error) {
+          logger.logPoint('Failed',(error as Error).message)
+      } finally {
+          this.unfinishedTransactions--;
       }
   }
 

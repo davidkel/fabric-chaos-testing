@@ -2,8 +2,8 @@ import * as env from 'env-var';
 
 export const logLevel = env
     .get('LOG_LEVEL')
-    .default('info')
-    .asEnum([ 'error', 'warn', 'info', 'debug']);
+    .default('logOnlyOnFailure')
+    .asEnum([ 'logOnlyOnFailure', 'AllPoints']);
 
 export const ORGS = env
     .get('ORGS')
@@ -53,6 +53,6 @@ export const gatewayPeer = env
     .asString();
 
 
-export const maxLimit = env.get('MAXLIMIT').default(500).asIntPositive();
-export const minLimit = env.get('MINLIMIT').default(50).asIntPositive();
-export const timeout = env.get('TIMEOUT').default(2000).asIntPositive();
+export const maxLimit = env.get('MAXLIMIT').default(50).asIntPositive();
+export const minLimit = env.get('MINLIMIT').default(30).asIntPositive();
+export const timeout = env.get('TIMEOUT').default(5000).asIntPositive();
