@@ -76,6 +76,8 @@ export class CCHelper {
               //       // all the others shouldn't happen but we will want to know if they do
               throw new Error(`unexpected validation code ${status.code}`);
           }
+          logger.logPoint('Committed')
+
 
       }catch(e){
           logger.logPoint('Failed',(e as Error).message)
