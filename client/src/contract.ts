@@ -4,9 +4,10 @@ import {
     Gateway,
     Network,
     ProposalOptions,
+    Status,
 } from 'fabric-gateway';
 import { TransactionDescriptor } from './transactionData';
-import { promiseTimeout } from './utils/helper';
+import {  timeout } from './utils/helper';
 
 import { Logger } from './utils/logger';
 
@@ -61,30 +62,29 @@ export class CCHelper {
           logger.logPoint('Submitting')
           const subtx = await txn.submit();
           logger.logPoint('Submitted')
-          const status = await promiseTimeout(config.timeout,()=>subtx.getStatus());
+
+
+
+          const status = await Promise.race([subtx.getStatus(),timeout(config.timeout)]) as Status
           if (status.code !== 11 && status.code !== 12 && status.code !== 0) {
-              // 0 = OK
-              // 10 = endorsement_policy_failure
-              // 11 = mvcc_read_conflict
-              // 12 = phantom read error
-              //
-              // 0,11,12 are ok. 10 would indicate a possible gateway problem
-              // all the others shouldn't happen but we will want to know if they do
+              //       // 0 = OK
+              //       // 10 = endorsement_policy_failure
+              //       // 11 = mvcc_read_conflict
+              //       // 12 = phantom read error
+              //       //
+              //       // 0,11,12 are ok. 10 would indicate a possible gateway problem
+              //       // all the others shouldn't happen but we will want to know if they do
               throw new Error(`unexpected validation code ${status.code}`);
           }
-
+          logger.logPoint('Committed')
 
 
       }catch(e){
-
-
           logger.logPoint('Failed',(e as Error).message)
 
       }finally{
           this.unfinishedTransactions--
       }
-
-
 
   }
 

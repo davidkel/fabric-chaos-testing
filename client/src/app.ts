@@ -48,3 +48,8 @@ process.on('SIGINT', () => {
     console.log('request to terminate received, stopping......');
     app.keepRunning = false;
 });
+
+if(!app.keepRunning){
+    console.log('Exiting process...');
+    process.exit(1);
+}
