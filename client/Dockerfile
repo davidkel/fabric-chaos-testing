@@ -3,8 +3,9 @@ RUN apk add g++ make python dumb-init
 COPY --chown=node:node src src
 COPY --chown=node:node package.json package.json
 COPY --chown=node:node tsconfig.json tsconfig.json
-COPY --chown=node:node package-lock.json package-lock.json
-RUN npm ci
+
+RUN npm install --production
+RUN npm install typescript
 RUN npm run build
 
 FROM node:14-alpine
