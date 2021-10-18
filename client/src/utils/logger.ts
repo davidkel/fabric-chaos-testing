@@ -10,7 +10,7 @@ interface ClientLogMessage {
 
 
 
-export type logLevels = 'logOnlyOnFailure'| 'AllPoints';
+export type logLevels = 'logOnlyOnFailure'| 'AllPoints' | 'Failure&Success';
 export class Logger {
   private logEntries: ClientLogMessage[] = [];
   txnId:string;
@@ -27,8 +27,9 @@ export class Logger {
           stage,
           message
       };
-      this.logEntries.push(logMessage)
+
       if(this.logLevel === 'logOnlyOnFailure'){
+          this.logEntries.push(logMessage)
           if (stage === 'Failed') {
               for (const logEntry of this.logEntries) {
                   console.log(JSON.stringify(logEntry));
@@ -38,9 +39,22 @@ export class Logger {
               this.logEntries = [];
           }
 
-      }else if(this.logLevel ==='AllPoints'){
+      }else if(this.logLevel === 'AllPoints'){
           console.log(JSON.stringify(logMessage));
 
+      }
+      else if(this.logLevel === 'Failure&Success'){
+          this.logEntries.push(logMessage)
+          if (stage === 'Failed') {
+              for (const logEntry of this.logEntries) {
+                  console.log(JSON.stringify(logEntry));
+              }
+          }
+          else if (stage === 'Committed' || stage === 'Evaluated' ){
+              console.log(JSON.stringify(logMessage));
+              this.logEntries = [];
+
+          }
       }
 
   }

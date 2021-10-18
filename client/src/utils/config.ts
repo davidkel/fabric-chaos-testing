@@ -3,7 +3,7 @@ import * as env from 'env-var';
 export const logLevel = env
     .get('LOG_LEVEL')
     .default('logOnlyOnFailure')
-    .asEnum(['logOnlyOnFailure', 'AllPoints']);
+    .asEnum(['logOnlyOnFailure', 'AllPoints','Failure&Success']);
 
 export const ORGS = env.get('ORGS').required().asJson();
 
