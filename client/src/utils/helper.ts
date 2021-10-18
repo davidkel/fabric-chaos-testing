@@ -10,24 +10,12 @@ export function sleep(max:number,min:number):Promise<void>{
         );
     })
 }
-export function promiseTimeout(
-    timeout: number,
-    callback: () => Promise<any>
-): Promise<any> {
-    return new Promise((resolve, reject) => {
 
-        const timer = setTimeout(() => {
+export function timeout(timeout:number):Promise<void>{
+    return new Promise((_resolve,reject)=>{
+        setTimeout(()=>{
             reject(new Error(`Promise timed out after ${timeout} ms`));
-        }, timeout);
-
-        callback()
-            .then((result: any) => {
-                clearTimeout(timer);
-                resolve(result);
-            })
-            .catch((err) => {
-                clearTimeout(timer);
-                reject(err);
-            });
-    });
+        },timeout
+        );
+    })
 }
