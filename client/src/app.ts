@@ -30,7 +30,7 @@ class App {
               ccHelper.getUnfinishedTransactions() <
         config.MAX_UNFINISHED_TRANSACTION_COUNT
           ) {
-              ccHelper.runTransaction(transactionData.getTransactionDetails());
+              ccHelper.runTransaction(transactionData.getTransactionDetails(config.transactionType));
           } else {
               await sleep(config.maxLimit, config.minLimit);
           }
