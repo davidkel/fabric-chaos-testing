@@ -36,7 +36,7 @@ const TxnsToRun: TransactionDescriptor[] = [
 ];
 
 // TODO: Make configurable
-const MAX_UNFINISED_COUNT = 5;
+const MAX_UNFINISED_COUNT = 30;
 const MIN_TXN_RUN_DELAY = 50;
 const MAX_TXN_RUN_DELAY = 500;
 

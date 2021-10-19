@@ -109,7 +109,7 @@ export class TransactionDriver {
             logger.logPoint('Submitted');
 
 
-/*
+
             const timer = new Promise(async (resolve, reject) => {
                 const timer = setTimeout(() => {
                     reject(new Error(`timeout waiting for status`));
@@ -122,14 +122,16 @@ export class TransactionDriver {
 
             const stat = (await timer) as Status;
 
-*/
-            const timerPromise = new Promise(async (resolve, reject) => {
-                setTimeout(() => {
-                    reject(new Error(`timeout waiting for status`));
-                }, 5000);
-            });
 
-            const stat = <Status>await Promise.race([subtx.getStatus, timerPromise]);
+
+
+            // const timerPromise = new Promise(async (resolve, reject) => {
+            //     setTimeout(() => {
+            //         reject(new Error(`timeout waiting for status`));
+            //     }, 5000);
+            // });
+
+            // const stat = <Status>await Promise.race([subtx.getStatus(), timerPromise]);
 
             // const stat: Status = await subtx.getStatus();
 
