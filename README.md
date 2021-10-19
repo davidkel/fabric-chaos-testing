@@ -17,13 +17,25 @@ or instead of npm start
 - npm run build
 - node -r source-map-support/register --require dotenv/config dist/app.js
 
-to change from logging only if a failure occurs to logging all points add
+### .env file options
 
-```
-LOG_LEVEL=AllPoints
-```
-in .env file
+| keyword   | values | default | description |
+| --------  | ------ | ------- | ------------|
+| LOG_LEVEL | 'logOnlyOnFailure','AllPoints','Failure&Success' | logOnlyOnFailure | Set the log output |
+| ORGS      |        | | identities for each org |
+| ORG       |        | | the org this client is running as |
+| MAX_UNFINISHED_TRANSACTION_COUNT | number | 30 | |
+| PEER_ENDPOINT | | | external address of gatewat peer to connect to|
+| CHANNEL_NAME | | | |
+| CHAINCODE_NAME | | | |
+| GATEWAY_PEER | | | used for ssl target name override |
+| MAXLIMIT | number | 500 | max time in MS to wait before checking backlog has reduced |
+| MINLIMIT | number | 50 | min time in MS to wait before checking backlog has reduced |
+| TIMEOUT  | number | 5000 | transaction commit notification timeout in MS |
+| TRANSACTION_TYPE | 'random','submit','eval' | random | run either submits/evals or a combination |
 
+
+### Docker
 client README.md has some details about using in docker
 
 ## Use the chaos engine

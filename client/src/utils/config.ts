@@ -12,7 +12,7 @@ export const ORG = env.get('ORG').required().default('Org1MSP').asString();
 export const MAX_UNFINISHED_TRANSACTION_COUNT = env
     .get('MAX_TRANSACTION_COUNT')
     .required()
-    .default(5)
+    .default(30)
     .asIntPositive();
 
 export const peerEndPoint = env
@@ -35,8 +35,8 @@ export const chaincodeName = env
 
 export const gatewayPeer = env.get('GATEWAY_PEER').asString();
 
-export const maxLimit = env.get('MAXLIMIT').default(50).asIntPositive();
-export const minLimit = env.get('MINLIMIT').default(30).asIntPositive();
+export const maxLimit = env.get('MAXLIMIT').default(1000).asIntPositive();
+export const minLimit = env.get('MINLIMIT').default(500).asIntPositive();
 export const timeout = env.get('TIMEOUT').default(5000).asIntPositive();
 
 
