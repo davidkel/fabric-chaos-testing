@@ -57,7 +57,7 @@ export class CCHelper {
 
       try{
 
-          logger.logPoint('Endorsing');
+          logger.logPoint('Endorsing', `${func}(${JSON.stringify(opts)})`);
           const txn = await proposal.endorse();
           logger.logPoint('Submitting')
           const subtx = await txn.submit();
@@ -76,7 +76,7 @@ export class CCHelper {
               //       // all the others shouldn't happen but we will want to know if they do
               throw new Error(`unexpected validation code ${status.code}`);
           }
-          logger.logPoint('Committed')
+          logger.logPoint('Committed', `status code: ${status.code}`);
 
 
       }catch(e){
@@ -95,8 +95,8 @@ export class CCHelper {
       };
       const proposal = this.contract.newProposal(func, opts);
       const txnId = proposal.getTransactionId();
-      const logger = new Logger(txnId,config.logLevel)
-      logger.logPoint('Evaluating');
+      const logger = new Logger(txnId,config.logLevel);
+      logger.logPoint('Evaluating', `${func}(${JSON.stringify(opts)})`);
       try {
           this.unfinishedTransactions++;
           await proposal.evaluate();
@@ -109,5 +109,3 @@ export class CCHelper {
   }
 
 }
-
-

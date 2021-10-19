@@ -6,6 +6,6 @@ ORGS={"Org1MSP":{"keyPath": "../fabric-network/docker-based-syschannel/organizat
 
 ORG="Org1MSP"
 
-TRANSACTION_COUNT=20
+MAX_TRANSACTION_COUNT=20
 
 LOG_LEVEL="logOnlyOnFailure"
