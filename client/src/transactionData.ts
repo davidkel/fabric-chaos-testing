@@ -1,4 +1,4 @@
-
+import {getRandomNumber} from './utils/helper';
 export interface TransactionDescriptor {
   type: 'submit' | 'eval';
   name:
@@ -20,9 +20,16 @@ export class TransactionData {
   ];
 
 
-  getTransactionDetails(): TransactionDescriptor {
-      const txnIndex = Math.round(Math.random() * (this.txnsToRun.length - 1));
-      return this.txnsToRun[txnIndex];
+  getTransactionDetails(type:string): TransactionDescriptor {
+
+      if(type === 'random'){
+          return this.txnsToRun[getRandomNumber(this.txnsToRun.length )];
+      }
+      else {
+          const transData = this.txnsToRun.filter(data=>data.type===type)
+          return transData[getRandomNumber(transData.length)]
+      }
+
   }
 
 }

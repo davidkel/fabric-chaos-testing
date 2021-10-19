@@ -19,3 +19,7 @@ export function timeout(timeout:number):Promise<void>{
         );
     })
 }
+
+export function getRandomNumber(length:number):number{
+    return Math.round(Math.random() * (length - 1));
+}

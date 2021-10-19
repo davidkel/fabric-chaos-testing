@@ -8,6 +8,4 @@ ORG="Org1MSP"
 
 TRANSACTION_COUNT=20
 
-CHAINCODE_DATA={"function":"createChaosAsset","args":[]}
-
 LOG_LEVEL="logOnlyOnFailure"

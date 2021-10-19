@@ -3,36 +3,23 @@ import * as env from 'env-var';
 export const logLevel = env
     .get('LOG_LEVEL')
     .default('logOnlyOnFailure')
-    .asEnum([ 'logOnlyOnFailure', 'AllPoints']);
+    .asEnum(['logOnlyOnFailure', 'AllPoints','Failure&Success']);
 
-export const ORGS = env
-    .get('ORGS')
-    .required()
-    .asJson()
+export const ORGS = env.get('ORGS').required().asJson();
 
-export const ORG = env
-    .get('ORG')
-    .required()
-    .default('Org1MSP')
-    .asString()
-
+export const ORG = env.get('ORG').required().default('Org1MSP').asString();
 
 export const MAX_UNFINISHED_TRANSACTION_COUNT = env
     .get('MAX_TRANSACTION_COUNT')
     .required()
     .default(5)
-    .asIntPositive()
+    .asIntPositive();
 
-export const CHAINCODE_DATA = env
-    .get('CHAINCODE_DATA')
-    .required()
-    .asJson()
-
-export const peerEndPoint =env
+export const peerEndPoint = env
     .get('PEER_ENDPOINT')
     .required()
     .default('')
-    .asString()
+    .asString();
 
 export const channelName = env
     .get('CHANNEL_NAME')
@@ -46,13 +33,11 @@ export const chaincodeName = env
     .default('basic')
     .asString();
 
-
-
-export const gatewayPeer = env
-    .get('GATEWAY_PEER')
-    .asString();
-
+export const gatewayPeer = env.get('GATEWAY_PEER').asString();
 
 export const maxLimit = env.get('MAXLIMIT').default(50).asIntPositive();
 export const minLimit = env.get('MINLIMIT').default(30).asIntPositive();
 export const timeout = env.get('TIMEOUT').default(5000).asIntPositive();
+
+
+export const transactionType = env.get('TRANSACTION_TYPE').default('random').asEnum(['random','submit','eval']);
