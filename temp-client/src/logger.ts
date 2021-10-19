@@ -1,4 +1,4 @@
-const logAllOnlyOnFailure = false;
+const logAllOnlyOnFailure = true;
 const onlyLogSuccessMsg = false;
 
 
