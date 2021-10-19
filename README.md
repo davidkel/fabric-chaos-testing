@@ -1,3 +1,51 @@
+# Getting started
+
+## bring up the network
+In fabric-network/docker-based-syschannel
+- ./network.sh up
+- ./network.sh createChannel
+- ./network.sh deployCC -ccn basic -ccp ../../chaincode/node -ccl typescript
+
+Note that currently the endorsement policy is fixed to an explicit endorsement policy of a majority
+
+## bring up the client
+In client
+- npm install
+- copy .sample-env to .env
+- npm start
+or instead of npm start
+- npm run build
+- node -r source-map-support/register --require dotenv/config dist/app.js
+
+to change from logging only if a failure occurs to logging all points add
+
+```
+LOG_LEVEL=AllPoints
+```
+in .env file
+
+client README.md has some details about using in docker
+
+## Use the chaos engine
+In chaos-engine
+- npm install
+- npm run build
+- npm start
+or instead of npm start
+- node dist/start.js ./scenarios peer0.org1.example.com
+
+chaos engine takes 3 parameters
+1. location of the scenarios
+2. gateway peer being used by client
+3. (optional) single scenario | cycle | random (default)
+
+Alternatively run it as a docker container
+- docker build . -t chaos:latest
+- ./runchaos.sh peer0.org1.example.com (optional single scenario | cycle | random)
+
+This will mount the scenarios directory into the container (change the script to use different directories)
+
+
 # Fabric Chaos Testing for the new Fabric Gateway
 This will be a prototype environment that will test the new Fabric Gateway when unexpected things happen to the hyperledger fabric network. The kinds of things that can occur are
 

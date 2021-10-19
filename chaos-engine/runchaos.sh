@@ -1,1 +1,1 @@
-docker run --rm -it --volume=/var/run/docker.sock:/var/run/docker.sock chaos:latest node dist/start.js $1 $2 $3
+docker run --rm -d --volume=/var/run/docker.sock:/var/run/docker.sock --volume ${PWD}/scenarios:/scenarios chaos:latest node dist/start.js ./scenarios $1 $2
