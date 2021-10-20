@@ -1,4 +1,4 @@
-export type Stage = 'Endorsing' | 'Submitting' | 'Submitted' | 'Committed' | 'Failed' | 'Evaluating' | 'Evaluated';
+export type Stage = 'Endorsing' | 'Submitting' | 'Submitted' | 'Committed' | 'Failed' | 'Evaluating' | 'Evaluated' | 'SubmitCompleted';
 
 interface ClientLogMessage {
     component: string;
@@ -35,7 +35,7 @@ export class Logger {
                   console.log(JSON.stringify(logEntry));
               }
           }
-          else if (stage === 'Committed' || stage === 'Evaluated' ){
+          else if (stage === 'SubmitCompleted' || stage === 'Evaluated' ){
               this.logEntries = [];
           }
 

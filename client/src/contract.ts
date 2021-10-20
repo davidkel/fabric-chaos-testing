@@ -10,11 +10,14 @@ import { TransactionDescriptor } from './transactionData';
 import {  timeout } from './utils/helper';
 
 import { Logger } from './utils/logger';
+import { EventSink } from './eventSink';
+import { ChaincodeEvent } from 'fabric-gateway/dist/protos/peer/chaincode_event_pb';
 
 
 export class CCHelper {
   contract: Contract;
   network: Network;
+  eventSink: EventSink;
   channel = '';
   chaincode = '';
   unfinishedTransactions = 0;
@@ -22,6 +25,11 @@ export class CCHelper {
   constructor(gateway: Gateway, channel: string, chaincode: string) {
       this.network = gateway.getNetwork(channel);
       this.contract = this.network.getContract(chaincode);
+      this.eventSink = new EventSink(this.network, chaincode);
+  }
+
+  async startEventListening(): Promise<void> {
+      await this.eventSink.startListening();
   }
 
   getUnfinishedTransactions(): number {
@@ -60,12 +68,11 @@ export class CCHelper {
           logger.logPoint('Endorsing', `${func}(${JSON.stringify(opts)})`);
           const txn = await proposal.endorse();
           logger.logPoint('Submitting')
+          const eventPromise = this.eventSink.registerForEvent(txnID);
           const subtx = await txn.submit();
           logger.logPoint('Submitted')
 
-
-
-          const status = await Promise.race([subtx.getStatus(),timeout(config.timeout)]) as Status
+          const status = await Promise.race([subtx.getStatus(),timeout(config.timeout, 'Waiting for commit status')]) as Status
           if (status.code !== 11 && status.code !== 12 && status.code !== 0) {
               //       // 0 = OK
               //       // 10 = endorsement_policy_failure
@@ -76,14 +83,17 @@ export class CCHelper {
               //       // all the others shouldn't happen but we will want to know if they do
               throw new Error(`unexpected validation code ${status.code}`);
           }
+
           logger.logPoint('Committed', `status code: ${status.code}`);
+          const event = await Promise.race([eventPromise, timeout(config.timeout, 'Waiting for chaincode event')]) as ChaincodeEvent; // TODO: may need a different timeout value
 
-
+          logger.logPoint('SubmitCompleted', `status code: ${status.code}, event: ${event.getEventName()}`)
       }catch(e){
           logger.logPoint('Failed',(e as Error).message)
 
       }finally{
           this.unfinishedTransactions--
+          this.eventSink.unregisterEvent(txnID);
       }
 
   }
