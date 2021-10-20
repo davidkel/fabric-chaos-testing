@@ -1,29 +1,28 @@
-import * as config from './utils/config';
+
 import {
+    ChaincodeEvent,
     Contract,
     Gateway,
     Network,
     ProposalOptions,
     Status,
 } from 'fabric-gateway';
+
 import { TransactionDescriptor } from './transactionData';
-import {  sleep, timeout } from './utils/helper';
-
+import {   timeout } from './utils/helper';
 import { Logger } from './utils/logger';
+import { EventHandler } from './eventHandler';
+import * as config from './utils/config';
 
-type EventData ={
-    payload:string,
-    eventName:string,
-    txnID:string
 
-}
 export class CCHelper {
   contract: Contract;
   network: Network;
   channel = '';
   chaincode = '';
   unfinishedTransactions = 0;
-  events:EventData[]=[]
+  eventHandler:EventHandler
+
 
 
   constructor(gateway: Gateway, channel: string, chaincode: string) {
@@ -31,11 +30,12 @@ export class CCHelper {
       this.channel = channel;
       this.network = gateway.getNetwork(channel);
       this.contract = this.network.getContract(chaincode);
-      this.getChaincodeEvents()
-
+      this.eventHandler = new EventHandler(this.network,this.chaincode)
 
   }
-
+  startEventListening():void{
+      this.eventHandler.startListening();
+  }
   getUnfinishedTransactions(): number {
       return this.unfinishedTransactions;
   }
@@ -63,7 +63,7 @@ export class CCHelper {
       const proposal = this.contract.newProposal(func, opts)
       const txnID = proposal.getTransactionId();
       this.unfinishedTransactions++;
-
+      const eventPromise = this.eventHandler.registerForEvent(txnID);
 
       const logger = new Logger(txnID,config.logLevel)
 
@@ -74,7 +74,10 @@ export class CCHelper {
           logger.logPoint('Submitting')
           const subtx = await txn.submit();
           logger.logPoint('Submitted');
-          const status = await Promise.race([subtx.getStatus(),timeout(config.timeout)]) as Status
+          const event = await Promise.race([eventPromise, timeout(config.timeout)]) as ChaincodeEvent;
+          logger.logPoint('EventReceived',`EventName:${event.eventName},Payload:${Buffer.from(event.payload).toString()}`);
+
+          const status = await Promise.race([subtx.getStatus(),timeout(config.timeout)]) as Status;
           if (status.code !== 11 && status.code !== 12 && status.code !== 0) {
               //       // 0 = OK
               //       // 10 = endorsement_policy_failure
@@ -87,22 +90,13 @@ export class CCHelper {
           }
 
           logger.logPoint('Committed', `status code: ${status.code}`);
-          await sleep(config.maxLimit,config.minLimit);
-
-          const index = this.events.findIndex((e:EventData)=> e.txnID === txnID);
-
-          if(index === -1){
-              throw new Error('No Event Received');
-          }
-          logger.logPoint('EventReceived',`EventName:${this.events[index].eventName},Payload:${this.events[index].payload}`);
-
-          this.events.splice(index);
 
       }catch(e){
           logger.logPoint('Failed',(e as Error).message)
 
       }finally{
           this.unfinishedTransactions--
+          this.eventHandler.unregisterEvent(txnID)
       }
 
   }
@@ -124,21 +118,6 @@ export class CCHelper {
           logger.logPoint('Failed',(error as Error).message)
       } finally {
           this.unfinishedTransactions--;
-      }
-  }
-
-  async getChaincodeEvents():Promise<void>{
-      const events =  await this.network.getChaincodeEvents(this.chaincode);
-      let eventData: EventData;
-
-      try {
-          for  await (const event of  events) {
-              eventData = {payload:Buffer.from(event.payload).toString(),eventName:event.eventName,txnID:event.transactionId}
-              this.events.push(eventData);
-          }
-
-      } finally {
-          events.close();
       }
   }
 

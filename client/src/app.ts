@@ -6,6 +6,7 @@ import { CCHelper } from './contract';
 import { GatewayHelper, OrgProfile } from './gateway';
 import { TransactionData } from './transactionData';
 import { sleep } from './utils/helper';
+import { EventHandler } from './eventHandler';
 
 interface Orgs {
   [key: string]: OrgProfile;
@@ -24,6 +25,7 @@ class App {
           config.channelName,
           config.chaincodeName
       );
+      ccHelper.startEventListening();
       const transactionData: TransactionData = new TransactionData();
       while (this.keepRunning) {
           if (
