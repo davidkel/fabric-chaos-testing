@@ -88,11 +88,15 @@ export class CCHelper {
 
           logger.logPoint('Committed', `status code: ${status.code}`);
           await sleep(config.maxLimit,config.minLimit);
-          const eventData = this.events.filter(e=>e.txnID === txnID);
-          if(eventData.length === 0){
-              throw new Error('No event received');
+
+          const index = this.events.findIndex((e:EventData)=> e.txnID === txnID);
+
+          if(index === -1){
+              throw new Error('No Event Received');
           }
-          logger.logPoint('EventReceived',`EventName:${eventData[0].eventName},Payload:${eventData[0].payload}`)
+          logger.logPoint('EventReceived',`EventName:${this.events[index].eventName},Payload:${this.events[index].payload}`);
+
+          this.events.splice(index);
 
       }catch(e){
           logger.logPoint('Failed',(e as Error).message)
