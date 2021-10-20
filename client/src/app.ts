@@ -35,6 +35,10 @@ class App {
               await sleep(config.maxLimit, config.minLimit);
           }
       }
+      if(!this.keepRunning){
+          console.log('Exiting process...');
+          process.exit(1);
+      }
   }
 }
 const app = new App();
@@ -42,14 +46,10 @@ app
     .main()
     .catch((error) =>
         console.log('******** FAILED to run the application:', error)
-    );
+    )
 
 process.on('SIGINT', () => {
     console.log('request to terminate received, stopping......');
     app.keepRunning = false;
 });
 
-if(!app.keepRunning){
-    console.log('Exiting process...');
-    process.exit(1);
-}
