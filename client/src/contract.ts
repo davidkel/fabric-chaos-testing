@@ -7,21 +7,33 @@ import {
     Status,
 } from 'fabric-gateway';
 import { TransactionDescriptor } from './transactionData';
-import {  timeout } from './utils/helper';
+import {  sleep, timeout } from './utils/helper';
 
 import { Logger } from './utils/logger';
 
+type EventData ={
+    payload:string,
+    eventName:string,
+    txnID:string
 
+}
 export class CCHelper {
   contract: Contract;
   network: Network;
   channel = '';
   chaincode = '';
   unfinishedTransactions = 0;
+  events:EventData[]=[]
+
 
   constructor(gateway: Gateway, channel: string, chaincode: string) {
+      this.chaincode = chaincode;
+      this.channel = channel;
       this.network = gateway.getNetwork(channel);
       this.contract = this.network.getContract(chaincode);
+      this.getChaincodeEvents()
+
+
   }
 
   getUnfinishedTransactions(): number {
@@ -61,10 +73,7 @@ export class CCHelper {
           const txn = await proposal.endorse();
           logger.logPoint('Submitting')
           const subtx = await txn.submit();
-          logger.logPoint('Submitted')
-
-
-
+          logger.logPoint('Submitted');
           const status = await Promise.race([subtx.getStatus(),timeout(config.timeout)]) as Status
           if (status.code !== 11 && status.code !== 12 && status.code !== 0) {
               //       // 0 = OK
@@ -76,8 +85,14 @@ export class CCHelper {
               //       // all the others shouldn't happen but we will want to know if they do
               throw new Error(`unexpected validation code ${status.code}`);
           }
-          logger.logPoint('Committed', `status code: ${status.code}`);
 
+          logger.logPoint('Committed', `status code: ${status.code}`);
+          await sleep(config.maxLimit,config.minLimit);
+          const eventData = this.events.filter(e=>e.txnID === txnID);
+          if(eventData.length === 0){
+              throw new Error('No event received');
+          }
+          logger.logPoint('EventReceived',`EventName:${eventData[0].eventName},Payload:${eventData[0].payload}`)
 
       }catch(e){
           logger.logPoint('Failed',(e as Error).message)
@@ -105,6 +120,21 @@ export class CCHelper {
           logger.logPoint('Failed',(error as Error).message)
       } finally {
           this.unfinishedTransactions--;
+      }
+  }
+
+  async getChaincodeEvents():Promise<void>{
+      const events =  await this.network.getChaincodeEvents(this.chaincode);
+      let eventData: EventData;
+
+      try {
+          for  await (const event of  events) {
+              eventData = {payload:Buffer.from(event.payload).toString(),eventName:event.eventName,txnID:event.transactionId}
+              this.events.push(eventData);
+          }
+
+      } finally {
+          events.close();
       }
   }
 
