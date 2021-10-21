@@ -1,4 +1,6 @@
 import { Network } from 'fabric-gateway';
+import { Logger } from './utils/logger';
+import * as config from './utils/config'
 
 export class EventHandler {
 
@@ -14,7 +16,8 @@ export class EventHandler {
             for await (const event of events) {
                 const listener = this.txnMap.get(event.transactionId);
                 if (!listener) {
-                    console.log(`Received Unexpected Event for txnID: ${event.transactionId}`)
+                    const logger = new Logger(event.transactionId,config.logLevel);
+                    logger.logPoint('Failed','Unexpected event received');
                 } else {
                     listener(event);
                     this.txnMap.delete(event.transactionId);

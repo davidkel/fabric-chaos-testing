@@ -11,10 +11,10 @@ export function sleep(max:number,min:number):Promise<void>{
     })
 }
 
-export function timeout(timeout:number):Promise<void>{
+export function timeout(timeout:number,message:string):Promise<void>{
     return new Promise((_resolve,reject)=>{
         setTimeout(()=>{
-            reject(new Error(`Promise timed out after ${timeout} ms`));
+            reject(new Error(`${message} after ${timeout} ms`));
         },timeout
         );
     })

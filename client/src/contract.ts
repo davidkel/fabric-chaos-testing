@@ -74,10 +74,8 @@ export class CCHelper {
           logger.logPoint('Submitting')
           const subtx = await txn.submit();
           logger.logPoint('Submitted');
-          const event = await Promise.race([eventPromise, timeout(config.timeout)]) as ChaincodeEvent;
-          logger.logPoint('EventReceived',`EventName:${event.eventName},Payload:${Buffer.from(event.payload).toString()}`);
 
-          const status = await Promise.race([subtx.getStatus(),timeout(config.timeout)]) as Status;
+          const status = await Promise.race([subtx.getStatus(),timeout(config.timeout,'Timed out waiting for status')]) as Status;
           if (status.code !== 11 && status.code !== 12 && status.code !== 0) {
               //       // 0 = OK
               //       // 10 = endorsement_policy_failure
@@ -90,6 +88,9 @@ export class CCHelper {
           }
 
           logger.logPoint('Committed', `status code: ${status.code}`);
+
+          const event = await Promise.race([eventPromise, timeout(config.timeout,'Timed out waiting for event ')]) as ChaincodeEvent;
+          logger.logPoint('EventReceived',`EventName:${event.eventName},Payload:${Buffer.from(event.payload).toString()}`);
 
       }catch(e){
           logger.logPoint('Failed',(e as Error).message)
