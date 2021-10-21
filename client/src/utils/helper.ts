@@ -15,7 +15,7 @@ export function sleep(max:number,min:number):Promise<void>{
 export function timeout(timeout:number,message:string,stage:Stage):Promise<void>{
     return new Promise((_resolve,reject)=>{
         setTimeout(()=>{
-            reject(new Error(`${message} after ${timeout} ms , Stage :${stage}`));
+            reject(new Error(`${message} after ${timeout} ms during stage ${stage}`));
         },timeout
         );
     })
