@@ -53,6 +53,7 @@ export class ChaosAssetContract extends Contract {
         const chaosAsset = new ChaosAsset();
         chaosAsset.value = newValue;
         const buffer = Buffer.from(JSON.stringify(chaosAsset));
+        ctx.stub.setEvent('updateAsset', buffer);
         await ctx.stub.putState(chaosAssetId, buffer);
     }
 
@@ -80,6 +81,7 @@ export class ChaosAssetContract extends Contract {
             const chaosAsset = new ChaosAsset();
             chaosAsset.value = '' + id;
             const buffer = Buffer.from(JSON.stringify(chaosAsset));
+            ctx.stub.setEvent('addUpdateAssets', buffer);
             await ctx.stub.putState('' + id, buffer);
         }
     }
@@ -93,4 +95,5 @@ export class ChaosAssetContract extends Contract {
         const rd = Math.random() * 100000;
         await ctx.stub.putState('random', Buffer.from(rd.toString()));
     }
+
 }

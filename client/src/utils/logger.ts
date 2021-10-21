@@ -1,4 +1,4 @@
-export type Stage = 'Endorsing' | 'Submitting' | 'Submitted' | 'Committed' | 'Failed' | 'Evaluating' | 'Evaluated';
+export type Stage = 'Endorsing' | 'Submitting' | 'Submitted' | 'Committed' | 'Failed' | 'Evaluating' | 'Evaluated' | 'EventReceived' ;
 
 interface ClientLogMessage {
     component: string;
@@ -7,8 +7,6 @@ interface ClientLogMessage {
     stage: Stage;
     message: string;
 }
-
-
 
 export type logLevels = 'logOnlyOnFailure'| 'AllPoints' | 'Failure&Success';
 export class Logger {
@@ -35,7 +33,7 @@ export class Logger {
                   console.log(JSON.stringify(logEntry));
               }
           }
-          else if (stage === 'Committed' || stage === 'Evaluated' ){
+          else if (stage === 'EventReceived' || stage === 'Evaluated'){
               this.logEntries = [];
           }
 
@@ -50,7 +48,7 @@ export class Logger {
                   console.log(JSON.stringify(logEntry));
               }
           }
-          else if (stage === 'Committed' || stage === 'Evaluated' ){
+          else if (stage === 'EventReceived' || stage === 'Evaluated'  ){
               console.log(JSON.stringify(logMessage));
               this.logEntries = [];
 
