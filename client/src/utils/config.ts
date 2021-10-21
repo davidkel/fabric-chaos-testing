@@ -37,7 +37,8 @@ export const gatewayPeer = env.get('GATEWAY_PEER').asString();
 
 export const maxLimit = env.get('MAXLIMIT').default(1000).asIntPositive();
 export const minLimit = env.get('MINLIMIT').default(500).asIntPositive();
-export const timeout = env.get('TIMEOUT').default(15000).asIntPositive();
+export const eventTimeout = env.get('EVENT_TIMEOUT').default(5000).asIntPositive();
+export const statusTimeout = env.get('STATUS_TIMEOUT').default(5000).asIntPositive();
 
 
 export const transactionType = env.get('TRANSACTION_TYPE').default('random').asEnum(['random','submit','eval']);

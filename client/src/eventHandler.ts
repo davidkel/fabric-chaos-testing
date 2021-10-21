@@ -17,7 +17,7 @@ export class EventHandler {
                 const listener = this.txnMap.get(event.transactionId);
                 if (!listener) {
                     const logger = new Logger(event.transactionId,config.logLevel);
-                    logger.logPoint('Failed','Unexpected event received');
+                    logger.logPoint('Failed','Event fired, but no listener registered');
                 } else {
                     listener(event);
                     this.txnMap.delete(event.transactionId);
