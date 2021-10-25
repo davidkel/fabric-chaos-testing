@@ -1,4 +1,4 @@
-import { Network } from 'fabric-gateway';
+import { ChaincodeEventsOptions, Network } from 'fabric-gateway';
 import { Logger } from './utils/logger';
 import * as config from './utils/config'
 import { sleep } from './utils/helper';
@@ -6,40 +6,57 @@ import { sleep } from './utils/helper';
 export class EventHandler {
 
     private txnMap = new Map<string, (value: unknown) => void>();
-    // startBlock = BigInt(0);
+    // private eventFired:string[] =[]
+    private blockTxns = new Map<BigInt, string[]>();
+    startBlock! : bigint;
     constructor(private readonly network: Network, private readonly chaincodeName: string) {
     }
 
     async startListening(): Promise<void> {
         const listen = true;
         while(listen){
-            console.log('started Listening........')
-            const events =  await this.network.getChaincodeEvents(this.chaincodeName
-                // { startBlock: this.startBlock }
+            const options :ChaincodeEventsOptions = { startBlock: this.startBlock }
+            if(!this.startBlock){
+                options.startBlock = undefined;
+            }
+            const events =  await this.network.getChaincodeEvents(this.chaincodeName,
+                options
             );
+
             try {
                 for await (const event of events) {
                     const listener = this.txnMap.get(event.transactionId);
-                    // this.startBlock = event.blockNumber;
-                    console.log('block num',event.blockNumber ,event.transactionId)
+                    if(this.startBlock && this.startBlock !== event.blockNumber){
+                        //delete old block transactions
+                        this.blockTxns.delete(this.startBlock);
+                    }
+
+                    this.startBlock = event.blockNumber;
+                    let txns = this.blockTxns.get(event.blockNumber);
                     if (!listener) {
-                        const logger = new Logger(event.transactionId,config.logLevel);
-                        logger.logPoint('Failed','Event fired, but no listener registered');
+
+                        if(txns !== undefined){
+                            //events not yet fired
+                            if(!txns.includes(event.transactionId)){
+                                const logger = new Logger(event.transactionId,config.logLevel);
+                                logger.logPoint('Failed','Event fired, but no listener registered');
+                            }
+
+                        }
                     } else {
                         listener(event);
+                        txns = (txns===undefined)?[]:txns
+                        txns.push(event.transactionId);
+                        this.blockTxns.set(event.blockNumber,txns);
                         this.txnMap.delete(event.transactionId);
                     }
                 }
 
             }catch(e){
-                console.log('Error thrown ---------',e)
-                console.log('closing events')
                 events.close();
 
-            }finally{
-                console.log('done');
             }
-            await sleep(5000,3000);
+            await sleep(config.eventSleepMax,config.eventSleepMin);
         }
 
 
