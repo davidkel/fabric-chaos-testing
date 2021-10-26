@@ -1,31 +1,64 @@
-import { Network } from 'fabric-gateway';
+import { ChaincodeEvent, ChaincodeEventsOptions, CloseableAsyncIterable, Network } from 'fabric-gateway';
 import { Logger } from './utils/logger';
 import * as config from './utils/config'
+
 
 export class EventHandler {
 
     private txnMap = new Map<string, (value: unknown) => void>();
 
-    constructor(private readonly network: Network, private readonly chaincodeName: string) {
+    private blockTxns = new Map<BigInt, string[]>();
 
+    startBlock! : bigint;
+
+    listeningtoEvents = false;
+
+    constructor(private readonly network: Network, private readonly chaincodeName: string) {
     }
 
     async startListening(): Promise<void> {
-        const events =  await this.network.getChaincodeEvents(this.chaincodeName);
+        const options :ChaincodeEventsOptions = { startBlock: this.startBlock };
+        if (!this.startBlock){
+            options.startBlock = undefined;
+        }
+        const events =  await this.network.getChaincodeEvents(this.chaincodeName,
+            options
+        );
+        this.listeningtoEvents = true;
+
+        this.getEvents(events);
+    }
+
+    async getEvents(events:CloseableAsyncIterable<ChaincodeEvent>):Promise<void>{
         try {
             for await (const event of events) {
                 const listener = this.txnMap.get(event.transactionId);
+                if (this.startBlock && this.startBlock !== event.blockNumber){
+                    this.blockTxns.delete(this.startBlock);
+                }
+
+                this.startBlock = event.blockNumber;
+                let txns = this.blockTxns.get(event.blockNumber);
                 if (!listener) {
-                    const logger = new Logger(event.transactionId,config.logLevel);
-                    logger.logPoint('Failed','Event fired, but no listener registered');
+                    if (txns !== undefined){
+                        if (!txns.includes(event.transactionId)){
+                            const logger = new Logger(event.transactionId, config.logLevel);
+                            logger.logPoint('Failed', 'Event fired, but no listener registered');
+                        }
+                    }
                 } else {
                     listener(event);
+                    txns = (txns === undefined) ? [] : txns;
+                    txns.push(event.transactionId);
+                    this.blockTxns.set(event.blockNumber, txns);
                     this.txnMap.delete(event.transactionId);
                 }
             }
 
-        } finally {
+        } catch (e){
             events.close();
+            this.listeningtoEvents = false;
+
         }
     }
 
@@ -34,7 +67,6 @@ export class EventHandler {
         const eventPromise = new Promise((resolve) => {
             this.txnMap.set(txnId, resolve);
         });
-
         return eventPromise;
     }
 

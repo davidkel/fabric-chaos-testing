@@ -22,11 +22,11 @@ export class TransactionData {
 
   getTransactionDetails(type:string): TransactionDescriptor {
 
-      if(type === 'random'){
+      if (type === 'random'){
           return this.txnsToRun[getRandomNumber(this.txnsToRun.length )];
       }
       else {
-          const transData = this.txnsToRun.filter(data=>data.type===type)
+          const transData = this.txnsToRun.filter(data=>data.type === type)
           return transData[getRandomNumber(transData.length)]
       }
 

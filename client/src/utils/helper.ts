@@ -1,22 +1,22 @@
 import { Stage } from './logger';
 
-export function resetDelay(min:number,max:number):number{
+export function resetDelay(min:number, max:number):number{
     return Math.floor(Math.random() * (max - min + 1) + min);
 }
-export function sleep(max:number,min:number):Promise<void>{
+export function sleep(max:number, min:number):Promise<void>{
     return new Promise((resolve)=>{
         setTimeout(()=>{
             resolve();
-        },resetDelay(min,max)
+        }, resetDelay(min, max)
         );
     })
 }
 
-export function timeout(timeout:number,message:string,stage:Stage):Promise<void>{
-    return new Promise((_resolve,reject)=>{
+export function timeout(timeout:number, message:string, stage:Stage):Promise<void>{
+    return new Promise((_resolve, reject)=>{
         setTimeout(()=>{
             reject(new Error(`${message} after ${timeout} ms during stage ${stage}`));
-        },timeout
+        }, timeout
         );
     })
 }
