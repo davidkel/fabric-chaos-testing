@@ -17,12 +17,14 @@ export interface OrgProfile {
     tlsCertPath: string;
     mspID: string;
   }
-export type  ClientConnectionState = 'Ready'|'NotStarted'|'NotConnected';
+export type  ClientConnectionState = 'Ready' | 'NotStarted' | 'NotConnected';
 
 export class GatewayHelper{
 
     gateway!: Gateway;
+
     client!: grpc.Client;
+
     org: OrgProfile;
 
     constructor(org: OrgProfile) {
@@ -33,7 +35,7 @@ export class GatewayHelper{
         this.client = await this.newGrpcConnection(this.org.tlsCertPath);
         this.gateway = connect({
             client:this.client,
-            identity: await this.newIdentity(this.org.certPath,this.org.mspID),
+            identity: await this.newIdentity(this.org.certPath, this.org.mspID),
             signer: await this.newSigner(this.org.keyPath),
         });
         return this.gateway;
@@ -43,17 +45,21 @@ export class GatewayHelper{
         const tlsRootCert = await fs.readFile(
             tlsCertPath
         );
+
         const tlsCredentials = grpc.credentials.createSsl(tlsRootCert);
+
         const GrpcClient = grpc.makeGenericClientConstructor({}, '');
+
         return new GrpcClient(config.peerEndPoint, tlsCredentials, {
             'grpc.ssl_target_name_override': config.gatewayPeer
         });
     }
 
-    private  async  newIdentity(certPath: string,mspId:string): Promise<Identity> {
+    private  async  newIdentity(certPath: string, mspId:string): Promise<Identity> {
         const credentials = await fs.readFile(
             certPath
         );
+
         return {
             mspId,
             credentials,
@@ -64,7 +70,9 @@ export class GatewayHelper{
         const privateKeyPem = await fs.readFile(
             keyPath
         );
+
         const privateKey = crypto.createPrivateKey(privateKeyPem);
+
         return signers.newPrivateKeySigner(privateKey);
     }
 
@@ -72,14 +80,14 @@ export class GatewayHelper{
 
         return new Promise((resolve) => {
 
-            if(!this.client){
+            if (!this.client){
                 resolve('NotStarted');
             }
 
             const timeout = new Date().getTime() + config.grpcTimeout;
 
-            this.client.waitForReady(timeout,(err)=>{
-                if(err){
+            this.client.waitForReady(timeout, (err)=>{
+                if (err){
                     resolve('NotConnected');
                 }
                 else {

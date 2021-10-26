@@ -8,16 +8,19 @@ interface ClientLogMessage {
     message: string;
 }
 
-export type logLevels = 'logOnlyOnFailure'| 'AllPoints' | 'Failure&Success';
+export type logLevels = 'logOnlyOnFailure' | 'AllPoints' | 'Failure&Success';
 export class Logger {
   private logEntries: ClientLogMessage[] = [];
+
   txnId:string;
-  constructor(txnId:string,private readonly logLevel:logLevels = 'logOnlyOnFailure'){
+
+  constructor(txnId:string, private readonly logLevel:logLevels = 'logOnlyOnFailure'){
       this.txnId = txnId
   }
 
-  logPoint(stage:Stage,message=''):void{
+  logPoint(stage:Stage, message = ''):void{
       const timestamp = new Date().toISOString();
+
       const logMessage: ClientLogMessage = {
           component: 'CLIENT',
           timestamp,
@@ -26,7 +29,7 @@ export class Logger {
           message
       };
 
-      if(this.logLevel === 'logOnlyOnFailure'){
+      if (this.logLevel === 'logOnlyOnFailure'){
           this.logEntries.push(logMessage)
           if (stage === 'Failed') {
               for (const logEntry of this.logEntries) {
@@ -37,11 +40,11 @@ export class Logger {
               this.logEntries = [];
           }
 
-      }else if(this.logLevel === 'AllPoints'){
+      } else if (this.logLevel === 'AllPoints'){
           console.log(JSON.stringify(logMessage));
 
       }
-      else if(this.logLevel === 'Failure&Success'){
+      else if (this.logLevel === 'Failure&Success'){
           this.logEntries.push(logMessage)
           if (stage === 'Failed') {
               for (const logEntry of this.logEntries) {

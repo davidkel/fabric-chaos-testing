@@ -3,7 +3,7 @@ import * as env from 'env-var';
 export const logLevel = env
     .get('LOG_LEVEL')
     .default('logOnlyOnFailure')
-    .asEnum(['logOnlyOnFailure', 'AllPoints','Failure&Success']);
+    .asEnum(['logOnlyOnFailure', 'AllPoints', 'Failure&Success']);
 
 export const ORGS = env.get('ORGS').required().asJson();
 
@@ -46,4 +46,4 @@ export const eventTimeout = env.get('EVENT_TIMEOUT').default(5000).asIntPositive
 export const statusTimeout = env.get('STATUS_TIMEOUT').default(5000).asIntPositive();
 export const grpcTimeout = env.get('GRPC_TIMEOUT').default(20000).asIntPositive();
 
-export const transactionType = env.get('TRANSACTION_TYPE').default('random').asEnum(['random','submit','eval']);
+export const transactionType = env.get('TRANSACTION_TYPE').default('random').asEnum(['random', 'submit', 'eval']);

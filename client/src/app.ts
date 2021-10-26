@@ -13,30 +13,34 @@ interface Orgs {
 
 class App {
   keepRunning = true;
+
   gateway!: Gateway;
+
   ccHelper!: CCHelper;
 
   async main(): Promise<void> {
       const gwHelper = new GatewayHelper((config.ORGS as Orgs)[config.ORG]);
-      await this.configure(gwHelper);
 
+      await this.configure(gwHelper);
 
       const transactionData: TransactionData = new TransactionData();
 
       while (this.keepRunning) {
-
           const ClietConnectionState = await gwHelper.waitForReady();
 
-          if(ClietConnectionState === 'NotConnected'){
-              await sleep(config.grpcSleepMax,config.grpcSleepMin);
-          }
-          else if(ClietConnectionState === 'Ready'){
-              if (this.ccHelper.getUnfinishedTransactions() < config.MAX_UNFINISHED_TRANSACTION_COUNT) {
-                  if(this.ccHelper.isListening() === false){
+          if (ClietConnectionState === 'NotConnected') {
+
+              await sleep(config.grpcSleepMax, config.grpcSleepMin);
+
+          } else if (ClietConnectionState === 'Ready') {
+
+              if ( this.ccHelper.getUnfinishedTransactions() < config.MAX_UNFINISHED_TRANSACTION_COUNT) {
+                  if (this.ccHelper.isListening() === false) {
                       this.ccHelper.startEventListening();
                   }
-                  this.ccHelper.runTransaction(transactionData.getTransactionDetails(config.transactionType));
-
+                  this.ccHelper.runTransaction(
+                      transactionData.getTransactionDetails(config.transactionType)
+                  );
               } else {
                   await sleep(config.maxLimit, config.minLimit);
               }
@@ -47,10 +51,9 @@ class App {
               process.exit(1);
           }
       }
-
-
   }
-  async configure(gwHelper:GatewayHelper){
+
+  async configure(gwHelper: GatewayHelper) {
       this.gateway = await gwHelper.configureGateway();
       this.ccHelper = new CCHelper(
           this.gateway,
@@ -63,9 +66,12 @@ class App {
 }
 
 const app = new App();
+
 app
     .main()
-    .catch((error) =>console.log('******** FAILED to run the application:', error));
+    .catch((error) =>
+        console.log('******** FAILED to run the application:', error)
+    );
 
 process.on('SIGINT', () => {
     console.log('request to terminate received, stopping......');

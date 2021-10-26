@@ -39,7 +39,19 @@
           "eslint:recommended",
           "plugin:@typescript-eslint/eslint-recommended",
           "plugin:@typescript-eslint/recommended"
+        ],
+        "rules": {
+          "@typescript-eslint/keyword-spacing":"error",
+          "@typescript-eslint/lines-between-class-members":"error",
+          "@typescript-eslint/comma-spacing":"error",
+          "@typescript-eslint/space-infix-ops":"error",
+          "@typescript-eslint/padding-line-between-statements":"error",
+          "padding-line-between-statements": [
+            "error",
+            { "blankLine": "always", "prev": ["const", "let"], "next": "*"}
+
         ]
+        }
       }
     ]
   }
