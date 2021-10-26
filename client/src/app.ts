@@ -26,18 +26,15 @@ class App {
       const transactionData: TransactionData = new TransactionData();
 
       while (this.keepRunning) {
-          const ClietConnectionState = await gwHelper.waitForReady();
+          const clientConnectionState = await gwHelper.waitForReady();
 
-          if (ClietConnectionState === 'NotConnected') {
+          if (clientConnectionState === 'NotConnected') {
 
               await sleep(config.grpcSleepMax, config.grpcSleepMin);
 
-          } else if (ClietConnectionState === 'Ready') {
+          } else if (clientConnectionState === 'Ready') {
 
               if ( this.ccHelper.getUnfinishedTransactions() < config.MAX_UNFINISHED_TRANSACTION_COUNT) {
-                  if (this.ccHelper.isListening() === false) {
-                      this.ccHelper.startEventListening();
-                  }
                   this.ccHelper.runTransaction(
                       transactionData.getTransactionDetails(config.transactionType)
                   );
@@ -60,8 +57,6 @@ class App {
           config.channelName,
           config.chaincodeName
       );
-
-      this.ccHelper.startEventListening();
   }
 }
 

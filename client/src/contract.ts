@@ -39,8 +39,8 @@ export class CCHelper {
 
   }
 
-  startEventListening():void{
-      this.eventHandler.startListening();
+  async startEventListening():Promise<void>{
+      await this.eventHandler.startListening();
   }
 
   isListening():boolean{
@@ -87,6 +87,10 @@ export class CCHelper {
 
           logger.logPoint('Endorsing', `${func}(${JSON.stringify(opts)})`);
           const txn = await proposal.endorse();
+
+          if (!this.isListening()){
+              await this.startEventListening();
+          }
 
           logger.logPoint('Submitting')
           const subtx = await txn.submit();

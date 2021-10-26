@@ -1,4 +1,4 @@
-import { ChaincodeEventsOptions, Network } from 'fabric-gateway';
+import { ChaincodeEvent, ChaincodeEventsOptions, CloseableAsyncIterable, Network } from 'fabric-gateway';
 import { Logger } from './utils/logger';
 import * as config from './utils/config'
 
@@ -17,7 +17,6 @@ export class EventHandler {
     }
 
     async startListening(): Promise<void> {
-
         const options :ChaincodeEventsOptions = { startBlock: this.startBlock };
 
         if (!this.startBlock){
@@ -29,6 +28,10 @@ export class EventHandler {
 
         this.listeningtoEvents = true;
 
+        this.getEvents(events);
+    }
+
+    async getEvents(events:CloseableAsyncIterable<ChaincodeEvent>):Promise<void>{
         try {
             for await (const event of events) {
                 const listener = this.txnMap.get(event.transactionId);
@@ -41,14 +44,12 @@ export class EventHandler {
                 let txns = this.blockTxns.get(event.blockNumber);
 
                 if (!listener) {
-
                     if (txns !== undefined){
                         if (!txns.includes(event.transactionId)){
                             const logger = new Logger(event.transactionId, config.logLevel);
 
                             logger.logPoint('Failed', 'Event fired, but no listener registered');
                         }
-
                     }
                 } else {
                     listener(event);
@@ -64,12 +65,7 @@ export class EventHandler {
             this.listeningtoEvents = false;
 
         }
-
-
-
-
     }
-
 
     registerForEvent(txnId: string): Promise<unknown> {
 
