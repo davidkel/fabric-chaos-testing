@@ -36,6 +36,11 @@ export class CCHelper {
   startEventListening():void{
       this.eventHandler.startListening();
   }
+
+  isListening():boolean{
+      return this.eventHandler.listeningtoEvents;
+  }
+
   getUnfinishedTransactions(): number {
       return this.unfinishedTransactions;
   }

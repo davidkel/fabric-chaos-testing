@@ -17,14 +17,13 @@ export interface OrgProfile {
     tlsCertPath: string;
     mspID: string;
   }
-export type  ClietConnection = 'Ready'|'NotStarted'|'NotConnected';
+export type  ClientConnectionState = 'Ready'|'NotStarted'|'NotConnected';
 
 export class GatewayHelper{
 
     gateway!: Gateway;
     client!: grpc.Client;
     org: OrgProfile;
-    // connected =false;
 
     constructor(org: OrgProfile) {
         this.org = org
@@ -37,7 +36,6 @@ export class GatewayHelper{
             identity: await this.newIdentity(this.org.certPath,this.org.mspID),
             signer: await this.newSigner(this.org.keyPath),
         });
-        // this.connected = true;
         return this.gateway;
     }
 
@@ -48,9 +46,7 @@ export class GatewayHelper{
         const tlsCredentials = grpc.credentials.createSsl(tlsRootCert);
         const GrpcClient = grpc.makeGenericClientConstructor({}, '');
         return new GrpcClient(config.peerEndPoint, tlsCredentials, {
-            'grpc.ssl_target_name_override': config.gatewayPeer,
-            // 'grpc.keepalive_permit_without_calls': 1,
-            // 'grpc.keealive_time_ms': 20000,
+            'grpc.ssl_target_name_override': config.gatewayPeer
         });
     }
 
@@ -72,19 +68,21 @@ export class GatewayHelper{
         return signers.newPrivateKeySigner(privateKey);
     }
 
-    async waitForReady(): Promise<ClietConnection> {
+    async waitForReady(): Promise<ClientConnectionState> {
+
         return new Promise((resolve) => {
+
             if(!this.client){
                 resolve('NotStarted');
             }
+
             const timeout = new Date().getTime() + config.grpcTimeout;
+
             this.client.waitForReady(timeout,(err)=>{
                 if(err){
-                    // this.connected = false;
                     resolve('NotConnected');
                 }
                 else {
-                    // this.connected = true;
                     resolve('Ready');
                 }
 

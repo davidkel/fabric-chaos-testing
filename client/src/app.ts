@@ -24,19 +24,19 @@ class App {
       const transactionData: TransactionData = new TransactionData();
 
       while (this.keepRunning) {
-          const ClietConnection = await gwHelper.waitForReady();
 
+          const ClietConnectionState = await gwHelper.waitForReady();
 
-          if (ClietConnection === 'NotStarted' ) {
-              await this.configure(gwHelper)
+          if(ClietConnectionState === 'NotConnected'){
+              await sleep(config.grpcSleepMax,config.grpcSleepMin);
           }
-          else if(ClietConnection === 'NotConnected'){
-              await sleep(500,300);
-          }
-          else if(ClietConnection ==='Ready'){
-
+          else if(ClietConnectionState === 'Ready'){
               if (this.ccHelper.getUnfinishedTransactions() < config.MAX_UNFINISHED_TRANSACTION_COUNT) {
+                  if(this.ccHelper.isListening() === false){
+                      this.ccHelper.startEventListening();
+                  }
                   this.ccHelper.runTransaction(transactionData.getTransactionDetails(config.transactionType));
+
               } else {
                   await sleep(config.maxLimit, config.minLimit);
               }
@@ -61,12 +61,11 @@ class App {
       this.ccHelper.startEventListening();
   }
 }
+
 const app = new App();
 app
     .main()
-    .catch((error) =>
-        console.log('******** FAILED to run the application:', error)
-    );
+    .catch((error) =>console.log('******** FAILED to run the application:', error));
 
 process.on('SIGINT', () => {
     console.log('request to terminate received, stopping......');
