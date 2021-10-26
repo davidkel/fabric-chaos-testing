@@ -45,11 +45,8 @@ export class GatewayHelper{
         const tlsRootCert = await fs.readFile(
             tlsCertPath
         );
-
         const tlsCredentials = grpc.credentials.createSsl(tlsRootCert);
-
         const GrpcClient = grpc.makeGenericClientConstructor({}, '');
-
         return new GrpcClient(config.peerEndPoint, tlsCredentials, {
             'grpc.ssl_target_name_override': config.gatewayPeer
         });
@@ -59,7 +56,6 @@ export class GatewayHelper{
         const credentials = await fs.readFile(
             certPath
         );
-
         return {
             mspId,
             credentials,
@@ -70,9 +66,7 @@ export class GatewayHelper{
         const privateKeyPem = await fs.readFile(
             keyPath
         );
-
         const privateKey = crypto.createPrivateKey(privateKeyPem);
-
         return signers.newPrivateKeySigner(privateKey);
     }
 
@@ -85,7 +79,6 @@ export class GatewayHelper{
             }
 
             const timeout = new Date().getTime() + config.grpcTimeout;
-
             this.client.waitForReady(timeout, (err)=>{
                 if (err){
                     resolve('NotConnected');

@@ -20,14 +20,11 @@ class App {
 
   async main(): Promise<void> {
       const gwHelper = new GatewayHelper((config.ORGS as Orgs)[config.ORG]);
-
       await this.configure(gwHelper);
 
       const transactionData: TransactionData = new TransactionData();
-
       while (this.keepRunning) {
           const clientConnectionState = await gwHelper.waitForReady();
-
           if (clientConnectionState === 'NotConnected') {
 
               await sleep(config.grpcSleepMax, config.grpcSleepMin);
@@ -61,7 +58,6 @@ class App {
 }
 
 const app = new App();
-
 app
     .main()
     .catch((error) =>

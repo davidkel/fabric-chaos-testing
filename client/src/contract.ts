@@ -73,32 +73,24 @@ export class CCHelper {
       const opts: ProposalOptions = {
           arguments: args,
       };
-
       const proposal = this.contract.newProposal(func, opts)
-
       const txnID = proposal.getTransactionId();
-
       this.unfinishedTransactions++;
       const eventPromise = this.eventHandler.registerForEvent(txnID);
-
       const logger = new Logger(txnID, config.logLevel)
-
       try {
 
           logger.logPoint('Endorsing', `${func}(${JSON.stringify(opts)})`);
           const txn = await proposal.endorse();
-
           if (!this.isListening()){
               await this.startEventListening();
           }
 
           logger.logPoint('Submitting')
           const subtx = await txn.submit();
-
           logger.logPoint('Submitted');
 
           const status = await Promise.race([subtx.getStatus(), timeout(config.statusTimeout, 'Timed out waiting for status', 'Committed')]) as Status;
-
           if (status.code !== 11 && status.code !== 12 && status.code !== 0) {
               //       // 0 = OK
               //       // 10 = endorsement_policy_failure
@@ -111,9 +103,7 @@ export class CCHelper {
           }
 
           logger.logPoint('Committed', `status code: ${status.code}`);
-
           const event = await Promise.race([eventPromise, timeout(config.eventTimeout, 'Timed out waiting for event', 'EventReceived')]) as ChaincodeEvent;
-
           logger.logPoint('EventReceived', `EventName:${event.eventName},Payload:${Buffer.from(event.payload).toString()}`);
 
       } catch (e){
@@ -131,13 +121,9 @@ export class CCHelper {
       const opts: ProposalOptions = {
           arguments: args
       };
-
       const proposal = this.contract.newProposal(func, opts);
-
       const txnId = proposal.getTransactionId();
-
       const logger = new Logger(txnId, config.logLevel);
-
       logger.logPoint('Evaluating', `${func}(${JSON.stringify(opts)})`);
       try {
           this.unfinishedTransactions++;

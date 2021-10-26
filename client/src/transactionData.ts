@@ -27,7 +27,6 @@ export class TransactionData {
       }
       else {
           const transData = this.txnsToRun.filter(data=>data.type === type)
-
           return transData[getRandomNumber(transData.length)]
       }
 

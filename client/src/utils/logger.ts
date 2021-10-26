@@ -20,7 +20,6 @@ export class Logger {
 
   logPoint(stage:Stage, message = ''):void{
       const timestamp = new Date().toISOString();
-
       const logMessage: ClientLogMessage = {
           component: 'CLIENT',
           timestamp,
@@ -28,7 +27,6 @@ export class Logger {
           stage,
           message
       };
-
       if (this.logLevel === 'logOnlyOnFailure'){
           this.logEntries.push(logMessage)
           if (stage === 'Failed') {

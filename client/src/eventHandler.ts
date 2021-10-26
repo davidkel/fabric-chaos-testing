@@ -18,14 +18,12 @@ export class EventHandler {
 
     async startListening(): Promise<void> {
         const options :ChaincodeEventsOptions = { startBlock: this.startBlock };
-
         if (!this.startBlock){
             options.startBlock = undefined;
         }
         const events =  await this.network.getChaincodeEvents(this.chaincodeName,
             options
         );
-
         this.listeningtoEvents = true;
 
         this.getEvents(events);
@@ -35,19 +33,16 @@ export class EventHandler {
         try {
             for await (const event of events) {
                 const listener = this.txnMap.get(event.transactionId);
-
                 if (this.startBlock && this.startBlock !== event.blockNumber){
                     this.blockTxns.delete(this.startBlock);
                 }
 
                 this.startBlock = event.blockNumber;
                 let txns = this.blockTxns.get(event.blockNumber);
-
                 if (!listener) {
                     if (txns !== undefined){
                         if (!txns.includes(event.transactionId)){
                             const logger = new Logger(event.transactionId, config.logLevel);
-
                             logger.logPoint('Failed', 'Event fired, but no listener registered');
                         }
                     }
@@ -72,7 +67,6 @@ export class EventHandler {
         const eventPromise = new Promise((resolve) => {
             this.txnMap.set(txnId, resolve);
         });
-
         return eventPromise;
     }
 

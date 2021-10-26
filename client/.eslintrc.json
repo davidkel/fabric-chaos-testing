@@ -45,12 +45,7 @@
           "@typescript-eslint/lines-between-class-members":"error",
           "@typescript-eslint/comma-spacing":"error",
           "@typescript-eslint/space-infix-ops":"error",
-          "@typescript-eslint/padding-line-between-statements":"error",
-          "padding-line-between-statements": [
-            "error",
-            { "blankLine": "always", "prev": ["const", "let"], "next": "*"}
-
-        ]
+          "@typescript-eslint/padding-line-between-statements":"error"
         }
       }
     ]
