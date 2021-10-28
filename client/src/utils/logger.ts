@@ -1,3 +1,6 @@
+import chalk from 'chalk';
+
+
 export type Stage = 'Endorsing' | 'Submitting' | 'Submitted' | 'Committed' | 'Failed' | 'Evaluating' | 'Evaluated' | 'EventReceived' ;
 
 interface ClientLogMessage {
@@ -31,7 +34,11 @@ export class Logger {
           this.logEntries.push(logMessage)
           if (stage === 'Failed') {
               for (const logEntry of this.logEntries) {
-                  console.log(JSON.stringify(logEntry));
+                  if (logEntry.stage === 'Failed'){
+                      console.log(chalk.red(JSON.stringify(logEntry)));
+                  } else {
+                      console.log(JSON.stringify(logEntry));
+                  }
               }
           }
           else if (stage === 'EventReceived' || stage === 'Evaluated'){
@@ -39,18 +46,30 @@ export class Logger {
           }
 
       } else if (this.logLevel === 'AllPoints'){
-          console.log(JSON.stringify(logMessage));
+          if (stage === 'Failed') {
+              console.log(chalk.red(JSON.stringify(logMessage)));
+          }
+          else if (stage === 'EventReceived' || stage === 'Evaluated'){
+              console.log(chalk.green(JSON.stringify(logMessage)));
+          }
+          else {
+              console.log(JSON.stringify(logMessage));
+          }
 
       }
       else if (this.logLevel === 'Failure&Success'){
           this.logEntries.push(logMessage)
           if (stage === 'Failed') {
               for (const logEntry of this.logEntries) {
-                  console.log(JSON.stringify(logEntry));
+                  if (logEntry.stage === 'Failed'){
+                      console.log(chalk.red(JSON.stringify(logEntry)));
+                  } else {
+                      console.log(chalk.yellow(JSON.stringify(logEntry)));
+                  }
               }
           }
           else if (stage === 'EventReceived' || stage === 'Evaluated'  ){
-              console.log(JSON.stringify(logMessage));
+              console.log(chalk.green(JSON.stringify(logMessage)));
               this.logEntries = [];
 
           }
