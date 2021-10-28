@@ -4,4 +4,4 @@ steps:
   - stopgateway
   - sleep 20000
   - restartgateway
-  - sleep 10000
+  - sleep 30000

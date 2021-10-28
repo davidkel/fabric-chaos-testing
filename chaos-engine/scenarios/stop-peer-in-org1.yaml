@@ -2,6 +2,6 @@ name: StopRestartOrg1Peer
 description: Stop and Start non gateway peer in Org1
 steps:
   - stoppeer org1
-  - sleep 5000
+  - sleep 10000
   - restartpeer
-  - sleep 2000
+  - sleep 5000
