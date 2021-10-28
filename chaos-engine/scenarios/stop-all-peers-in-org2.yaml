@@ -2,6 +2,6 @@ name: StopRestartOrg2
 description: Stop and Restart all peers in Org 2
 steps:
   - stopallpeers org2
-  - sleep 5000
+  - sleep 10000
   - restartallpeers
-  - sleep 2000
+  - sleep 5000
