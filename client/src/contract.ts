@@ -106,8 +106,9 @@ export class CCHelper {
           const event = await Promise.race([eventPromise, timeout(config.eventTimeout, 'Timed out waiting for event', 'EventReceived')]) as ChaincodeEvent;
           logger.logPoint('EventReceived', `EventName:${event.eventName},Payload:${Buffer.from(event.payload).toString()}`);
 
-      } catch (e){
-          logger.logPoint('Failed', (e as Error).message)
+      } catch (e:any){
+          const details = (e.details !== undefined) ? JSON.stringify(e.details) : '';
+          logger.logPoint('Failed', e.message + details);
 
       } finally {
           this.unfinishedTransactions--
