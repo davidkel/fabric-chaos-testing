@@ -19,6 +19,7 @@ class App {
   ccHelper!: CCHelper;
 
   async main(): Promise<void> {
+      this.displayConfig();
       const gwHelper = new GatewayHelper((config.ORGS as Orgs)[config.ORG]);
       await this.configure(gwHelper);
 
@@ -45,6 +46,10 @@ class App {
               process.exit(1);
           }
       }
+  }
+
+  displayConfig(){
+      console.log('App running with Configuration:\n', config);
   }
 
   async configure(gwHelper: GatewayHelper) {
