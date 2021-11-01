@@ -24,15 +24,21 @@ or instead of npm start
 | LOG_LEVEL | 'logOnlyOnFailure','AllPoints','Failure&Success' | logOnlyOnFailure | Set the log output |
 | ORGS      |        | | identities for each org |
 | ORG       |        | | the org this client is running as |
-| MAX_UNFINISHED_TRANSACTION_COUNT | number | 30 | |
+| MAX_TRANSACTION_COUNT | number | 30 | |
 | PEER_ENDPOINT | | | external address of gatewat peer to connect to|
 | CHANNEL_NAME | | | |
 | CHAINCODE_NAME | | | |
 | GATEWAY_PEER | | | used for ssl target name override |
 | MAXLIMIT | number | 500 | max time in MS to wait before checking backlog has reduced |
 | MINLIMIT | number | 50 | min time in MS to wait before checking backlog has reduced |
-| TIMEOUT  | number | 5000 | transaction commit notification timeout in MS |
+| GRPCSLEEPMAX | number | 1000 | max sleep between each waitForReady |
+| GRPCSLEEPMIN | nunber | 500 | min sleep between each waitForReady |
+| EVENT_TIMEOUT  | number | 5000 | chaincode event received timeout in MS |
+| STATUS_TIMEOUT  | number | 5000 | transaction commit notification timeout in MS |
+| GRPC_TIMEOUT  | number | 20000 | grpc waitforready timeout in MS |
+
 | TRANSACTION_TYPE | 'random','submit','eval' | random | run either submits/evals or a combination |
+| COLOUR_LOGS | 'true', 'false' | 'true' | add colour to log lines |
 
 
 ### Docker
