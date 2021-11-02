@@ -20,7 +20,7 @@ class App {
 
   async main(): Promise<void> {
       this.displayConfig();
-      const gwHelper = new GatewayHelper((config.ORGS as Orgs)[config.ORG]);
+      const gwHelper = new GatewayHelper((config.orgs as Orgs)[config.org]);
       await this.configure(gwHelper);
 
       const transactionData: TransactionData = new TransactionData();
@@ -32,7 +32,7 @@ class App {
 
           } else if (clientConnectionState === 'Ready') {
 
-              if ( this.ccHelper.getUnfinishedTransactions() < config.MAX_UNFINISHED_TRANSACTION_COUNT) {
+              if ( this.ccHelper.getUnfinishedTransactions() < config.maxUnfinishedTransactionCount) {
                   this.ccHelper.runTransaction(
                       transactionData.getTransactionDetails(config.transactionType)
                   );

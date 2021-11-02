@@ -3,6 +3,7 @@ import {
     ChaincodeEvent,
     Contract,
     Gateway,
+    GatewayError,
     Network,
     ProposalOptions,
     Status,
@@ -106,9 +107,10 @@ export class CCHelper {
           const event = await Promise.race([eventPromise, timeout(config.eventTimeout, 'Timed out waiting for event', 'EventReceived')]) as ChaincodeEvent;
           logger.logPoint('EventReceived', `EventName:${event.eventName},Payload:${Buffer.from(event.payload).toString()}`);
 
-      } catch (e:any){
-          const details = (e.details !== undefined) ? JSON.stringify(e.details) : '';
-          logger.logPoint('Failed', e.message + details);
+      } catch (error:unknown){
+          const gatewayError = error as GatewayError;
+          const details = (gatewayError.details !== undefined) ? ` Details: ${JSON.stringify(gatewayError.details)}` : '';
+          logger.logPoint('Failed', gatewayError.message + details);
 
       } finally {
           this.unfinishedTransactions--
@@ -129,9 +131,11 @@ export class CCHelper {
       try {
           this.unfinishedTransactions++;
           await proposal.evaluate();
-          logger.logPoint('Evaluated');
-      } catch (error) {
-          logger.logPoint('Failed', (error as Error).message)
+          logger.logPoint('Evaluated', `${func}(${JSON.stringify(opts)})`);
+      } catch (error:unknown) {
+          const gatewayError = error as GatewayError;
+          const details = (gatewayError.details !== undefined) ? ` Details: ${JSON.stringify(gatewayError.details)}` : '';
+          logger.logPoint('Failed', gatewayError.message + details)
       } finally {
           this.unfinishedTransactions--;
       }
