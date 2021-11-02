@@ -129,7 +129,7 @@ export class CCHelper {
       try {
           this.unfinishedTransactions++;
           await proposal.evaluate();
-          logger.logPoint('Evaluated');
+          logger.logPoint('Evaluated', `${func}(${JSON.stringify(opts)})`);
       } catch (error:any) {
           const details = (error.details !== undefined) ? ` Details: ${JSON.stringify(error.details)}` : '';
           logger.logPoint('Failed', (error as Error).message + details)
