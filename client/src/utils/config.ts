@@ -49,3 +49,9 @@ export const grpcTimeout = env.get('GRPC_TIMEOUT').default(20000).asIntPositive(
 export const transactionType = env.get('TRANSACTION_TYPE').default('random').asEnum(['random', 'submit', 'eval']);
 
 export const colourLogs = env.get('COLOUR_LOGS').default('true').asBool();
+
+export const txStatsTimer = env.get('TXSTATS_TIMER').default(5000).asIntPositive();
+export const txStatsMode = env
+    .get('TXSTATS_MODE')
+    .default('All')
+    .asEnum(['Stalled', 'All']);
