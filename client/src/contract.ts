@@ -107,7 +107,7 @@ export class CCHelper {
           logger.logPoint('EventReceived', `EventName:${event.eventName},Payload:${Buffer.from(event.payload).toString()}`);
 
       } catch (e:any){
-          const details = (e.details !== undefined) ? JSON.stringify(e.details) : '';
+          const details = (e.details !== undefined) ? ` Details: ${JSON.stringify(e.details)}` : '';
           logger.logPoint('Failed', e.message + details);
 
       } finally {
@@ -130,8 +130,9 @@ export class CCHelper {
           this.unfinishedTransactions++;
           await proposal.evaluate();
           logger.logPoint('Evaluated');
-      } catch (error) {
-          logger.logPoint('Failed', (error as Error).message)
+      } catch (error:any) {
+          const details = (error.details !== undefined) ? ` Details: ${JSON.stringify(error.details)}` : '';
+          logger.logPoint('Failed', (error as Error).message + details)
       } finally {
           this.unfinishedTransactions--;
       }

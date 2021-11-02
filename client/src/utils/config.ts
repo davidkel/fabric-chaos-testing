@@ -5,11 +5,11 @@ export const logLevel = env
     .default('logOnlyOnFailure')
     .asEnum(['logOnlyOnFailure', 'AllPoints', 'Failure&Success']);
 
-export const ORGS = env.get('ORGS').required().asJson();
+export const orgs = env.get('ORGS').required().asJson();
 
-export const ORG = env.get('ORG').required().default('Org1MSP').asString();
+export const org = env.get('ORG').required().default('Org1MSP').asString();
 
-export const MAX_UNFINISHED_TRANSACTION_COUNT = env
+export const maxUnfinishedTransactionCount = env
     .get('MAX_TRANSACTION_COUNT')
     .required()
     .default(30)
