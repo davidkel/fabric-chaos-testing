@@ -21,7 +21,7 @@ or instead of npm start
 
 | keyword   | values | default | description |
 | --------  | ------ | ------- | ------------|
-| LOG_LEVEL | 'logOnlyOnFailure','AllPoints','Failure&Success' | logOnlyOnFailure | Set the log output |
+| LOG_LEVEL | 'Failure','All','Failure&Success' | Failure | Set the log output |
 | ORGS      |        | | identities for each org |
 | ORG       |        | | the org this client is running as |
 | MAX_TRANSACTION_COUNT | number | 30 | |
