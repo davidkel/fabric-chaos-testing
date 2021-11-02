@@ -12,13 +12,13 @@ interface ClientLogMessage {
     message: string;
 }
 
-export type logLevels = 'logOnlyOnFailure' | 'AllPoints' | 'Failure&Success';
+export type logLevels = 'Failure' | 'All' | 'Failure&Success';
 export class Logger {
   private logEntries: ClientLogMessage[] = [];
 
   txnId:string;
 
-  constructor(txnId:string, private readonly logLevel:logLevels = 'logOnlyOnFailure'){
+  constructor(txnId:string, private readonly logLevel:logLevels = 'Failure'){
       this.txnId = txnId
   }
 
@@ -31,7 +31,7 @@ export class Logger {
           stage,
           message
       };
-      if (this.logLevel === 'logOnlyOnFailure'){
+      if (this.logLevel === 'Failure'){
           this.logEntries.push(logMessage)
           if (stage === 'Failed') {
               for (const logEntry of this.logEntries) {
@@ -44,7 +44,7 @@ export class Logger {
               this.logEntries = [];
           }
 
-      } else if (this.logLevel === 'AllPoints'){
+      } else if (this.logLevel === 'All'){
           if ( config.colourLogs === true){
               if (stage === 'Failed') {
                   console.log(chalk.red(JSON.stringify(logMessage)));
