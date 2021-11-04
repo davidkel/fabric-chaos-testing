@@ -4,9 +4,28 @@ import {Logger} from './logger';
 export type NodeManagerActions = (params: string[]) => Promise<void>;
 
 type ContainerType = 'orderer' | 'peer' | 'gateway';
-type StopType = 'stop' | 'pause';
+type StopType = 'stop' | 'pause' | 'kill';
 type StartType = 'restart' | 'unpause';
 type RestartCount = 'first' | 'all';
+
+interface ContainerTerminationMessages {
+    terminatingMessage: string;
+    terminatedMessage: string;
+}
+
+const containerTerminationMessages = new Map<StopType, ContainerTerminationMessages>();
+containerTerminationMessages.set('stop', {
+    terminatedMessage:  'stopped ',
+    terminatingMessage: 'stopping'
+});
+containerTerminationMessages.set('kill', {
+    terminatedMessage:  'killed ',
+    terminatingMessage: 'killing'
+});
+containerTerminationMessages.set('pause', {
+    terminatedMessage:  'paused ',
+    terminatingMessage: 'pausing'
+});
 
 export class NodeManager {
 
@@ -63,12 +82,13 @@ export class NodeManager {
         return ordererContainers;
     }
 
-    private async stopContainer(containerInfo: ContainerInfo, stop: StopType, containerType: ContainerType) {
+    private async stopContainer(containerInfo: ContainerInfo, stopType: StopType, containerType: ContainerType) {
         const containerName = containerInfo.Names[0].substr(1);
-        Logger.logPoint('Running', this.scenarioName, `${stop === 'stop' ? 'stopping' : 'pausing'} ${containerType} ${containerName} ${containerInfo.Id}`);
+        const containerTerminationMessage = containerTerminationMessages.get(stopType);
+        Logger.logPoint('Running', this.scenarioName, `${containerTerminationMessage!.terminatingMessage} ${containerType} ${containerName} ${containerInfo.Id}`);
         const container = this.docker.getContainer(containerInfo.Id);
-        await (stop === 'stop' ? container.stop() : container.pause());
-        Logger.logPoint('Running', this.scenarioName, `${stop === 'stop'? 'stopped' : 'paused'}  ${containerType} ${containerName} ${containerInfo.Id}`);
+        await container[stopType]();
+        Logger.logPoint('Running', this.scenarioName, `${containerTerminationMessage!.terminatedMessage} ${containerType} ${containerName} ${containerInfo.Id}`);
         this.stoppedContainers.push(containerInfo);
     }
 
@@ -114,7 +134,7 @@ export class NodeManager {
             Logger.logPoint('Running', this.scenarioName, `${start === 'restart' ? 'restarting' : 'unpausing'} ${containerType} ${containerName} ${containerToStart!.Id}`);
             const container = this.docker.getContainer(containerToStart!.Id);
             await (start === 'restart' ? container.start() : container.unpause());
-            Logger.logPoint('Running', this.scenarioName, `${start === 'restart' ? 'restarted' : 'unpaused'} ${containerType} ${containerName} ${containerToStart!.Id}`);
+            Logger.logPoint('Running', this.scenarioName, `${start === 'restart' ? 'restarted ' : 'unpaused '} ${containerType} ${containerName} ${containerToStart!.Id}`);
             const indexOfContainer = this.stoppedContainers.indexOf(containerToStart);
             this.stoppedContainers.splice(indexOfContainer, 1);
         }
@@ -124,18 +144,23 @@ export class NodeManager {
 
     // Peer Actions
 
+    // Gateway Peer Actions
+
     async pauseGatewayPeer(): Promise<void> {
+        await this.stopGatewayPeer('pause');
+    }
+
+    async stopGatewayPeer(stopType: StopType = 'stop'): Promise<void> {
         const gatewayPeerInfo = await this.getGatewayPeer();
         if (gatewayPeerInfo) {
-            await this.stopContainer(gatewayPeerInfo, 'pause', 'gateway');
+            await this.stopContainer(gatewayPeerInfo, stopType, 'gateway');
+        } else {
+            Logger.logPoint('Running', this.scenarioName, `No gateway peer found to ${stopType}`);
         }
     }
 
-    async stopGatewayPeer(): Promise<void> {
-        const gatewayPeerInfo = await this.getGatewayPeer();
-        if (gatewayPeerInfo) {
-            await this.stopContainer(gatewayPeerInfo, 'stop', 'gateway');
-        }
+    async killGatewayPeer(): Promise<void> {
+        await this.stopGatewayPeer('kill');
     }
 
     async unpauseGatewayPeer(): Promise<void> {
@@ -146,11 +171,17 @@ export class NodeManager {
         await this.restartStoppedContainers('restart', 'gateway');
     }
 
+    // Non Gateway Peer Actions
+
     async pauseNonGatewayPeer(params: string[]): Promise<void> {
-        await this.stopNonGatewayPeer(params, false);
+        await this.stopNonGatewayPeer(params, 'pause');
     }
 
-    async stopNonGatewayPeer(params: string[], stop = true): Promise<void> {
+    async killNonGatewayPeer(params: string[]): Promise<void> {
+        await this.stopNonGatewayPeer(params, 'kill');
+    }
+
+    async stopNonGatewayPeer(params: string[], stopType: StopType = 'stop'): Promise<void> {
         const organisation = params[0];
         const peers = await this.getAllRunningPeerContainers(organisation);
 
@@ -165,7 +196,7 @@ export class NodeManager {
 
         const randomPeerIndex = Math.round(Math.random() * (peers.length - 1));
         const nonGatewayPeer = peers[randomPeerIndex];
-        await this.stopContainer(nonGatewayPeer, stop ? 'stop' : 'pause', 'peer');
+        await this.stopContainer(nonGatewayPeer, stopType, 'peer');
     }
 
     async unpauseNonGatewayPeer(params: string[]): Promise<void> {
@@ -178,20 +209,24 @@ export class NodeManager {
 
     // Peer Org Actions
 
-    async stopAllOrgPeers(params: string[], stop = true): Promise<void> {
+    async stopAllOrgPeers(params: string[], stopType: StopType = 'stop'): Promise<void> {
         const peers = await this.getAllRunningPeerContainers(params[0]);
         for (const peer of peers) {
-            await this.stopContainer(peer, stop ? 'stop' : 'pause', 'peer');
+            await this.stopContainer(peer, stopType, 'peer');
         }
     }
 
-    async restartAllOrgPeers(params: string[], start = true): Promise<void> {
+    async killAllOrgPeers(params: string[]): Promise<void> {
+        await this.stopAllOrgPeers(params, 'kill');
+    }
+
+    async restartAllOrgPeers(params: string[]): Promise<void> {
         const organisation = params[0];
         await this.restartStoppedContainers('restart', 'peer', organisation, 'all');
     }
 
     async pauseAllOrgPeers(params: string[]): Promise<void> {
-        await this.stopAllOrgPeers(params, false);
+        await this.stopAllOrgPeers(params, 'pause');
     }
 
     async unpauseAllOrgPeers(params: string[]): Promise<void> {
@@ -202,7 +237,7 @@ export class NodeManager {
 
     // Orderer Actions
 
-    async stopOrderer(stop = true): Promise<void> {
+    async stopOrderer(stopType: StopType = 'stop'): Promise<void> {
         const orderers = await this.getAllOrdererContainers();
 
         if (orderers.length === 0) {
@@ -212,11 +247,15 @@ export class NodeManager {
 
         const randomOrdererIndex = Math.round(Math.random() * (orderers.length - 1));
         const orderer = orderers[randomOrdererIndex];
-        await this.stopContainer(orderer, stop ? 'stop' : 'pause', 'orderer');
+        await this.stopContainer(orderer, stopType, 'orderer');
     }
 
     async pauseOrderer(): Promise<void> {
-        await this.stopOrderer(false);
+        await this.stopOrderer('pause');
+    }
+
+    async killOrderer(): Promise<void> {
+        await this.stopOrderer('kill');
     }
 
     async restartOrderer(): Promise<void> {
@@ -227,11 +266,17 @@ export class NodeManager {
         await this.restartStoppedContainers('unpause', 'orderer');
     }
 
-    async stopAllOrderers(stop = true): Promise<void> {
+    // All Orderer Actions
+
+    async stopAllOrderers(stopType: StopType = 'stop'): Promise<void> {
         const orderers = await this.getAllOrdererContainers();
         for (const orderer of orderers) {
-            await this.stopContainer(orderer, stop ? 'stop' : 'pause', 'orderer');
+            await this.stopContainer(orderer, stopType, 'orderer');
         }
+    }
+
+    async killAllOrderers(): Promise<void> {
+        await this.stopAllOrderers('kill');
     }
 
     async restartAllOrderers(): Promise<void> {
@@ -239,12 +284,14 @@ export class NodeManager {
     }
 
     async pauseAllOrderers(): Promise<void> {
-        await this.stopAllOrderers(false);
+        await this.stopAllOrderers('pause');
     }
 
     async unpauseAllOrderers(): Promise<void> {
         await this.restartStoppedContainers('unpause', 'orderer', undefined, 'all');
     }
+
+    // Misc Actions
 
     async sleep(params: string[]): Promise<void> {
         let ms = params[0].toLowerCase();
@@ -263,6 +310,8 @@ export class NodeManager {
         Logger.logPoint('Running', this.scenarioName, `sleeping for ${delay}`);
         return new Promise(resolve => setTimeout(resolve, delay));
     }
+
+    // End Of Actions
 
     static validateStep(stepMethod: string, actionAndParameters: string[]) {
         if (stepMethod === 'sleep') {

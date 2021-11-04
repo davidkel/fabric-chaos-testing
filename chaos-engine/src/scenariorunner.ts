@@ -10,34 +10,39 @@ class Scenario {
     steps: string[] = []
 }
 
-type GatewaySteps = 'stopgateway' | 'restartgateway' | 'pausegateway' | 'unpausegateway';
-type PeerSteps = 'unpausepeer' | 'restartpeer' | 'pausepeer' |'stoppeer' | 'stopallpeers' | 'pauseallpeers' | 'restartallpeers' | 'unpauseallpeers';
-type OrdererSteps = 'pauseorderer' | 'stoporderer' | 'restartorderer' | 'unpauseorderer' | 'stopallorderers' | 'pauseallorderers' | 'restartallorderers' | 'unpauseallorderers';
+type GatewaySteps = 'stopgateway' | 'restartgateway' | 'pausegateway' | 'unpausegateway' | 'killgateway';
+type PeerSteps = 'unpausepeer' | 'restartpeer' | 'pausepeer' | 'stoppeer' | 'stopallpeers' | 'pauseallpeers' | 'restartallpeers' | 'unpauseallpeers' | 'killpeer' | 'killallpeers';
+type OrdererSteps = 'pauseorderer' | 'stoporderer' | 'restartorderer' | 'unpauseorderer' | 'stopallorderers' | 'pauseallorderers' | 'restartallorderers' | 'unpauseallorderers'| 'killorderer' | 'killallorderers';
 type GenericSteps =  'delay' | 'sleep';
 type Steps = GatewaySteps | PeerSteps | OrdererSteps | GenericSteps;
 
 const stepMapper: Map<Steps, keyof NodeManager> = new Map<Steps, keyof NodeManager>();
 stepMapper.set('stopgateway', 'stopGatewayPeer');
+stepMapper.set('killgateway', 'killGatewayPeer');
 stepMapper.set('pausegateway', 'pauseGatewayPeer');
 stepMapper.set('restartgateway', 'restartGatewayPeer');
 stepMapper.set('unpausegateway', 'unpauseGatewayPeer');
 
 stepMapper.set('stoppeer', 'stopNonGatewayPeer');
+stepMapper.set('killpeer', 'killNonGatewayPeer');
 stepMapper.set('pausepeer', 'pauseNonGatewayPeer');
 stepMapper.set('unpausepeer', 'unpauseNonGatewayPeer');
 stepMapper.set('restartpeer', 'restartNonGatewayPeer');
 
 stepMapper.set('stopallpeers', 'stopAllOrgPeers');
+stepMapper.set('killallpeers', 'killAllOrgPeers');
 stepMapper.set('pauseallpeers', 'pauseAllOrgPeers');
 stepMapper.set('restartallpeers', 'restartAllOrgPeers');
 stepMapper.set('unpauseallpeers', 'unpauseAllOrgPeers');
 
 stepMapper.set('stoporderer', 'stopOrderer');
+stepMapper.set('killorderer', 'killOrderer');
 stepMapper.set('pauseorderer', 'pauseOrderer');
 stepMapper.set('restartorderer', 'restartOrderer');
 stepMapper.set('unpauseorderer', 'unpauseOrderer');
 
 stepMapper.set('stopallorderers', 'stopAllOrderers');
+stepMapper.set('killallorderers', 'killAllOrderers');
 stepMapper.set('pauseallorderers', 'pauseAllOrderers');
 stepMapper.set('restartallorderers', 'restartAllOrderers');
 stepMapper.set('unpauseallorderers', 'unpauseAllOrderers');
