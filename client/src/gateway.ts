@@ -38,7 +38,7 @@ export class GatewayHelper{
             identity: await this.newIdentity(this.org.certPath, this.org.mspID),
             signer: await this.newSigner(this.org.keyPath),
             commitStatusOptions: () => {
-                return { deadline: Date.now() + 60000 }; // 1 minute
+                return { deadline: Date.now() + config.statusTimeout }; // 1 minute
             }
         });
         return this.gateway;

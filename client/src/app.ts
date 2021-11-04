@@ -6,7 +6,7 @@ import { CCHelper, TransactionStats } from './contract';
 import { GatewayHelper, OrgProfile } from './gateway';
 import { TransactionData } from './transactionData';
 import { sleep } from './utils/helper';
-import chalk from 'chalk';
+import chalk = require('chalk') ;
 
 interface Orgs {
     [key: string]: OrgProfile;
