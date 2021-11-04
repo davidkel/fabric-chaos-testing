@@ -105,8 +105,7 @@ export class CCHelper {
           logger.logPoint('Submitting')
           const subtx = await txn.submit();
           logger.logPoint('Submitted');
-
-          const status = await Promise.race([subtx.getStatus(), timeout(config.statusTimeout, 'Timed out waiting for status', 'Committed')]) as Status;
+          const status = await subtx.getStatus() as Status;
           if (status.code !== 11 && status.code !== 12 && status.code !== 0) {
               //       // 0 = OK
               //       // 10 = endorsement_policy_failure
