@@ -2,6 +2,6 @@ name: StopOneOrderer
 description: Stop and Restart an Orderer
 steps:
   - stoporderer
-  - sleep random[40000,60000]
+  - sleep random[20000,40000]
   - restartorderer
-  - sleep 30000
+  - sleep 20000

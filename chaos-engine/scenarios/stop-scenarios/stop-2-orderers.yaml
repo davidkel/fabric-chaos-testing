@@ -3,7 +3,7 @@ description: Stop And Restart Two Orderers
 steps:
   - stoporderer
   - stoporderer
-  - sleep 5000
+  - sleep random[20000,40000]
   - restartorderer
   - restartorderer
-  - sleep 5000
+  - sleep 20000

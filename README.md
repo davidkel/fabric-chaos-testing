@@ -66,6 +66,8 @@ Alternatively run it as a docker container
 
 This will mount the scenarios directory into the container (change the script to use different directories)
 
+check the README.md file in the chaos-engine directory for details about scenarios
+
 
 # Fabric Chaos Testing for the new Fabric Gateway
 This will be a prototype environment that will test the new Fabric Gateway when unexpected things happen to the hyperledger fabric network. The kinds of things that can occur are
