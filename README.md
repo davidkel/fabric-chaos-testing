@@ -37,7 +37,7 @@ or instead of npm start
 | ENDORSE_TIMEOUT | number | 30000 | timeout for endorsement in MS |
 | EVALUATE_TIMEOUT | number | 30000 | timeout for evaluate in MS |
 | SUBMIT_TIMEOUT | number | 10000 | timeout for submit in MS |
-| STATUS_TIMEOUT  | number | 5000 | transaction commit notification timeout in MS |
+| STATUS_TIMEOUT  | number | 60000 | transaction commit notification timeout in MS |
 | EVENT_TIMEOUT  | number | 5000 | chaincode event received timeout in MS |
 | TRANSACTION_TYPE | 'random','submit','eval' | random | run either submits/evals or a combination |
 | TXSTATS_TIMER | number | 5000 | check and optionally output stats at given interval in ms (0 = turn off) |
