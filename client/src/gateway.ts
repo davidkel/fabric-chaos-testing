@@ -10,6 +10,7 @@ import { promises as fs } from 'fs';
 import * as crypto from 'crypto';
 
 import * as config from './utils/config';
+import { defaultTimeout } from './utils/helper';
 
 export interface OrgProfile {
     keyPath: string;
@@ -37,9 +38,10 @@ export class GatewayHelper{
             client:this.client,
             identity: await this.newIdentity(this.org.certPath, this.org.mspID),
             signer: await this.newSigner(this.org.keyPath),
-            commitStatusOptions: () => {
-                return { deadline: Date.now() + config.statusTimeout }; // 1 minute
-            }
+            commitStatusOptions: () => defaultTimeout(config.statusTimeout),
+            evaluateOptions:  () => defaultTimeout(config.evaluateTimeout),
+            endorseOptions: () =>  defaultTimeout(config.endorseTimeout),
+            submitOptions:  () => defaultTimeout(config.submitTimeout),
         });
         return this.gateway;
     }
