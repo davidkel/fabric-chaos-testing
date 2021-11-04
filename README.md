@@ -26,16 +26,19 @@ or instead of npm start
 | ORG       |        | | the org this client is running as |
 | MAX_TRANSACTION_COUNT | number | 30 | |
 | PEER_ENDPOINT | | | external address of gatewat peer to connect to|
-| CHANNEL_NAME | | | |
-| CHAINCODE_NAME | | | |
+| CHANNEL_NAME |string |'mychannel' | Name of the channel used |
+| CHAINCODE_NAME | string |'basic' |Name of the chaincode deployed |
 | GATEWAY_PEER | | | used for ssl target name override |
 | MAXLIMIT | number | 500 | max time in MS to wait before checking backlog has reduced |
 | MINLIMIT | number | 50 | min time in MS to wait before checking backlog has reduced |
 | GRPCSLEEPMAX | number | 1000 | max sleep between each waitForReady |
 | GRPCSLEEPMIN | nunber | 500 | min sleep between each waitForReady |
-| EVENT_TIMEOUT  | number | 5000 | chaincode event received timeout in MS |
-| STATUS_TIMEOUT  | number | 5000 | transaction commit notification timeout in MS |
 | GRPC_TIMEOUT  | number | 20000 | grpc waitforready timeout in MS |
+| ENDORSE_TIMEOUT | number | 30000 | timeout for endorsement in MS |
+| EVALUATE_TIMEOUT | number | 30000 | timeout for evaluate in MS |
+| SUBMIT_TIMEOUT | number | 10000 | timeout for submit in MS |
+| STATUS_TIMEOUT  | number | 5000 | transaction commit notification timeout in MS |
+| EVENT_TIMEOUT  | number | 5000 | chaincode event received timeout in MS |
 | TRANSACTION_TYPE | 'random','submit','eval' | random | run either submits/evals or a combination |
 | TXSTATS_TIMER | number | 5000 | check and optionally output stats at given interval in ms (0 = turn off) |
 | TXSTATS_MODE | 'Stalled', 'All' | 'All' | output just a warning if client could have stalled or also output txn stats as well. Ignored if TXSTATS_TIMER is 0 |
