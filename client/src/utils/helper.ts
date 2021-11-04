@@ -1,5 +1,5 @@
 import { Stage } from './logger';
-
+import * as grpc from '@grpc/grpc-js';
 export function resetDelay(min:number, max:number):number{
     return Math.floor(Math.random() * (max - min + 1) + min);
 }
@@ -23,4 +23,13 @@ export function timeout(timeout:number, message:string, stage:Stage):Promise<voi
 
 export function getRandomNumber(length:number):number{
     return Math.round(Math.random() * (length - 1));
+}
+
+export function defaultTimeout(timeout:number): grpc.CallOptions | Record<string, unknown> {
+    if (timeout === 0){
+        return {};
+    }
+    return {
+        deadline: Date.now() + timeout
+    };
 }
