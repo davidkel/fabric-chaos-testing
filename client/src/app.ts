@@ -6,7 +6,7 @@ import { CCHelper, TransactionStats } from './contract';
 import { GatewayHelper, OrgProfile } from './gateway';
 import { TransactionData } from './transactionData';
 import { sleep } from './utils/helper';
-import chalk = require('chalk') ;
+import chalk = require('chalk');
 
 interface Orgs {
     [key: string]: OrgProfile;
@@ -85,8 +85,8 @@ class App {
             message: ''
         }
         if (!this.checkStatsHaveChanged(txStats)) {
-            statMessage.message = 'WARNING: Client may have stalled, no transactions being evaluated or submitted';
-            const output = config.colourLogs ? chalk.red(JSON.stringify(statMessage)) : JSON.stringify(statMessage);
+            statMessage.message = 'WARNING: Client may have stalled, no new transactions are being evaluated or endorsed';
+            const output = config.colourLogs ? chalk.yellow(JSON.stringify(statMessage)) : JSON.stringify(statMessage);
             console.error(output);
             return;
         }
