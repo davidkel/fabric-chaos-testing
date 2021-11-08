@@ -57,12 +57,12 @@ process.on('SIGINT', () => {
 
             if (keepRunning && scenarioRunner.scenarioExists(INTERVAL_SCENARIO)) {
                 await scenarioRunner.runScenario(INTERVAL_SCENARIO);
+            }
 
-                if (mode === 'cycle') {
-                    scenarioIndex++;
-                    if (scenarioIndex >= scenarioNames.length) {
-                        scenarioIndex = 0;
-                    }
+            if (mode === 'cycle') {
+                scenarioIndex++;
+                if (scenarioIndex >= scenarioNames.length) {
+                    scenarioIndex = 0;
                 }
             }
         }
