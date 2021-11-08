@@ -1,4 +1,4 @@
-import { ChaincodeEvent, ChaincodeEventsOptions, CloseableAsyncIterable, Network } from 'fabric-gateway';
+import { ChaincodeEvent, ChaincodeEventsOptions, CloseableAsyncIterable, Network } from '@hyperledger/fabric-gateway';
 import { Logger } from './utils/logger';
 import * as config from './utils/config'
 

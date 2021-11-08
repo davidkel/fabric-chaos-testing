@@ -9,6 +9,7 @@ In fabric-network/docker-based-syschannel
 Note that currently the endorsement policy is fixed to an explicit endorsement policy of a majority
 
 ## bring up the client
+Make sure you are using Node 14 or higher LTS release
 In client
 - npm install
 - copy .sample-env to .env

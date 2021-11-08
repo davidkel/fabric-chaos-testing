@@ -1,4 +1,4 @@
-import { Gateway } from 'fabric-gateway';
+import { Gateway } from '@hyperledger/fabric-gateway';
 
 import * as config from './utils/config';
 import { CCHelper, TransactionStats } from './contract';

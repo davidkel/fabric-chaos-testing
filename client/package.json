@@ -22,7 +22,7 @@
     "chalk": "^4.1.2",
     "dotenv": "^10.0.0",
     "env-var": "^7.0.1",
-    "fabric-gateway": "unstable",
+    "@hyperledger/fabric-gateway": "unstable",
     "source-map-support": "^0.5.20",
     "winston": "^3.3.3"
   }

@@ -4,7 +4,7 @@ import {
     Signer,
     signers,
     Gateway,
-} from 'fabric-gateway';
+} from '@hyperledger/fabric-gateway';
 import * as grpc from '@grpc/grpc-js';
 import { promises as fs } from 'fs';
 import * as crypto from 'crypto';
@@ -98,4 +98,3 @@ export class GatewayHelper{
 
     }
 }
-
