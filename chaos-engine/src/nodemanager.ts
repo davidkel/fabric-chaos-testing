@@ -146,21 +146,21 @@ export class NodeManager {
 
     // Gateway Peer Actions
 
-    async pauseGatewayPeer(): Promise<void> {
-        await this.stopGatewayPeer('pause');
+    async pauseGatewayPeer(params: string[]): Promise<void> {
+        await this.stopGatewayPeer(params, 'pause');
     }
 
-    async stopGatewayPeer(stopType: StopType = 'stop'): Promise<void> {
+    async killGatewayPeer(params: string[]): Promise<void> {
+        await this.stopGatewayPeer(params, 'kill');
+    }
+
+    async stopGatewayPeer(_params: string[], stopType: StopType = 'stop'): Promise<void> {
         const gatewayPeerInfo = await this.getGatewayPeer();
         if (gatewayPeerInfo) {
             await this.stopContainer(gatewayPeerInfo, stopType, 'gateway');
         } else {
             Logger.logPoint('Running', this.scenarioName, `No gateway peer found to ${stopType}`);
         }
-    }
-
-    async killGatewayPeer(): Promise<void> {
-        await this.stopGatewayPeer('kill');
     }
 
     async unpauseGatewayPeer(): Promise<void> {
@@ -236,8 +236,15 @@ export class NodeManager {
 
 
     // Orderer Actions
+    async pauseOrderer(params: string[]): Promise<void> {
+        await this.stopOrderer(params, 'pause');
+    }
 
-    async stopOrderer(stopType: StopType = 'stop'): Promise<void> {
+    async killOrderer(params: string[]): Promise<void> {
+        await this.stopOrderer(params, 'kill');
+    }
+
+    async stopOrderer(_params: string[], stopType: StopType = 'stop'): Promise<void> {
         const orderers = await this.getAllOrdererContainers();
 
         if (orderers.length === 0) {
@@ -248,14 +255,6 @@ export class NodeManager {
         const randomOrdererIndex = Math.round(Math.random() * (orderers.length - 1));
         const orderer = orderers[randomOrdererIndex];
         await this.stopContainer(orderer, stopType, 'orderer');
-    }
-
-    async pauseOrderer(): Promise<void> {
-        await this.stopOrderer('pause');
-    }
-
-    async killOrderer(): Promise<void> {
-        await this.stopOrderer('kill');
     }
 
     async restartOrderer(): Promise<void> {
