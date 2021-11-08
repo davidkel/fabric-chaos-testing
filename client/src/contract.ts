@@ -6,7 +6,7 @@ import {
     GatewayError,
     Network,
     ProposalOptions
-} from 'fabric-gateway';
+} from '@hyperledger/fabric-gateway';
 
 import { TransactionDescriptor } from './transactionData';
 import { timeout } from './utils/helper';
