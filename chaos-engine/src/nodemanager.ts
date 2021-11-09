@@ -163,11 +163,11 @@ export class NodeManager {
         }
     }
 
-    async unpauseGatewayPeer(): Promise<void> {
+    async unpauseGatewayPeer(_params: string[]): Promise<void> {
         await this.restartStoppedContainers('unpause', 'gateway');
     }
 
-    async restartGatewayPeer(): Promise<void> {
+    async restartGatewayPeer(_params: string[]): Promise<void> {
         await this.restartStoppedContainers('restart', 'gateway');
     }
 
@@ -257,36 +257,36 @@ export class NodeManager {
         await this.stopContainer(orderer, stopType, 'orderer');
     }
 
-    async restartOrderer(): Promise<void> {
+    async restartOrderer(_params: string[]): Promise<void> {
         await this.restartStoppedContainers('restart', 'orderer');
     }
 
-    async unpauseOrderer(): Promise<void> {
+    async unpauseOrderer(_params: string[]): Promise<void> {
         await this.restartStoppedContainers('unpause', 'orderer');
     }
 
     // All Orderer Actions
 
-    async stopAllOrderers(stopType: StopType = 'stop'): Promise<void> {
+    async stopAllOrderers(_params: string[], stopType: StopType = 'stop'): Promise<void> {
         const orderers = await this.getAllOrdererContainers();
         for (const orderer of orderers) {
             await this.stopContainer(orderer, stopType, 'orderer');
         }
     }
 
-    async killAllOrderers(): Promise<void> {
-        await this.stopAllOrderers('kill');
+    async killAllOrderers(params: string[]): Promise<void> {
+        await this.stopAllOrderers(params, 'kill');
     }
 
-    async restartAllOrderers(): Promise<void> {
+    async restartAllOrderers(_params: string[]): Promise<void> {
         await this.restartStoppedContainers('restart', 'orderer', undefined, 'all');
     }
 
-    async pauseAllOrderers(): Promise<void> {
-        await this.stopAllOrderers('pause');
+    async pauseAllOrderers(params: string[]): Promise<void> {
+        await this.stopAllOrderers(params, 'pause');
     }
 
-    async unpauseAllOrderers(): Promise<void> {
+    async unpauseAllOrderers(_params: string[]): Promise<void> {
         await this.restartStoppedContainers('unpause', 'orderer', undefined, 'all');
     }
 
