@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/start.js ./scenarios peer0.org1.example.com",
+    "start": "node dist/start.js ./scenarios/stop-scenarios peer0.org1.example.com",
     "build-docker": "docker build . -t chaos:latest"
   },
   "devDependencies": {
