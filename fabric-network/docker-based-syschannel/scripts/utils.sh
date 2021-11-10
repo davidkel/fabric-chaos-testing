@@ -150,7 +150,13 @@ function fatalln() {
   exit 1
 }
 
+# get Timestamp
+function timestamp() {
+   date -u +"%Y-%m-%dT%H:%M:%SZ"
+}
+
 export -f errorln
 export -f successln
 export -f infoln
 export -f warnln
+export -f timestamp

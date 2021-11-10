@@ -325,6 +325,8 @@ function deployCC() {
 
 ## Call the change chaincode endosement policy
 function changeCCEndorsement() {
+  echo "$(timestamp): To change chaincode endorsement policy"
+
   scripts/changeCCEndosementPolicy.sh $CHANNEL_NAME $CC_NAME $CC_VERSION $CC_SEQUENCE $CC_INIT_FCN $CC_END_POLICY $CC_COLL_CONFIG $CLI_DELAY $MAX_RETRY $VERBOSE
 
   if [ $? -ne 0 ]; then
