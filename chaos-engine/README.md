@@ -38,7 +38,7 @@ to run
 - node dist/start.js <SCENARIO_DIR> <GATEWAY_PEER> <ScenarioName | random | cycle>  (random is the default)
 
 eg to run a single scenario
-- node dist/start.js ./scenarios peer0.org1.example.com StopAndRestartGateway
+- node dist/start.js ./scenarios/stop-scenarios peer0.org1.example.com StopAndRestartGateway
 
 to run in cycle mode
-- node dist/start.js ./scenarios peer0.org1.example.com cycle
+- node dist/start.js ./scenarios/stop-scenarios peer0.org1.example.com cycle
