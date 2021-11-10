@@ -323,6 +323,15 @@ function deployCC() {
 }
 
 
+## Call the change chaincode endosement policy
+function changeCCEndorsement() {
+  scripts/changeCCEndosementPolicy.sh $CHANNEL_NAME $CC_NAME $CC_VERSION $CC_SEQUENCE $CC_INIT_FCN $CC_END_POLICY $CC_COLL_CONFIG $CLI_DELAY $MAX_RETRY $VERBOSE
+
+  if [ $? -ne 0 ]; then
+    fatalln "Changing endorsement policy failed"
+  fi
+}
+
 # Tear down running network
 function networkDown() {
   # stop org3 containers also in addition to org1 and org2, in case we were running sample to add org3
@@ -512,6 +521,8 @@ elif [ "$MODE" == "restart" ]; then
   infoln "Restarting network"
 elif [ "$MODE" == "deployCC" ]; then
   infoln "deploying chaincode on channel '${CHANNEL_NAME}'"
+elif [ "$MODE" == "changeCCEndorsement" ]; then
+  infoln "Changing chaincode endorsement policy"
 else
   printHelp
   exit 1
@@ -527,6 +538,8 @@ elif [ "${MODE}" == "createChannel" ]; then
   createChannel
 elif [ "${MODE}" == "deployCC" ]; then
   deployCC
+elif [ "${MODE}" == "changeCCEndorsement" ]; then
+  changeCCEndorsement
 elif [ "${MODE}" == "down" ]; then
   networkDown
 else
