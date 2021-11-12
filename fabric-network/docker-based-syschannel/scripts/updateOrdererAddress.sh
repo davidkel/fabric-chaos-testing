@@ -19,6 +19,7 @@ fetchChannelConfig() {
   CHANNEL=$2
   OUTPUT=$3
 
+
   setGlobals $ORG
   export FABRIC_CFG_PATH=$PWD/../config/
   infoln "Fetching the most recent configuration block for the channel"
@@ -37,7 +38,7 @@ fetchChannelConfig() {
   cp config.json modified_config.json
   # edit orderer address
   tmp=$(mktemp)
-  jq '.channel_group.groups.Orderer.groups.OrdererOrg.values.Endpoints.value.addresses[0] = "new.orderer1.example.com:7050"' modified_config.json > "$tmp" && mv "$tmp" modified_config.json
+  jq '.channel_group.groups.Orderer.groups.OrdererOrg.values.Endpoints.value.addresses[0] = "new1.example.com:7050"' modified_config.json > "$tmp" && mv "$tmp" modified_config.json
 
   { set +x; } 2>/dev/null
 }
@@ -63,39 +64,57 @@ createConfigUpdate() {
   { set +x; } 2>/dev/null
 }
 
-# Submit the config update transaction
-submitConfigUpdateTransaction(){
-    CHANNEL=$1
-    FILE=$2
-    peer channel update -f $FILE -c $CHANNEL -o localhost:7050 --tls --cafile $ORDERER_CA
-
-}
-
 
 # signConfigtxAsPeerOrg <org> <configtx.pb>
 # Set the peerOrg admin of an org and sign the config update
 signConfigtxAsPeerOrg() {
+  timestamp
   ORG=$1
   CONFIGTXFILE=$2
   setGlobals $ORG
   set -x
+  echo 'credentials used'
+   echo 'CORE_PEER_LOCALMSPID'   $CORE_PEER_LOCALMSPID
+   echo 'CORE_PEER_TLS_ROOTCERT_FILE' $CORE_PEER_TLS_ROOTCERT_FILE
+   echo 'CORE_PEER_MSPCONFIGPATH' $CORE_PEER_MSPCONFIGPATH
+   echo 'CORE_PEER_ADDRESS' $CORE_PEER_ADDRESS
   peer channel signconfigtx -f "${CONFIGTXFILE}"
   { set +x; } 2>/dev/null
 
 }
+# Submit the config update transaction
+submitConfigUpdateTransaction(){
+    ORG=$1
+    CHANNEL=$2
+    CONFIGTXFILE=$3
+    setGlobals $ORG
+    set -x
+  echo 'credentials used'
+   echo 'CORE_PEER_LOCALMSPID'   $CORE_PEER_LOCALMSPID
+   echo 'CORE_PEER_TLS_ROOTCERT_FILE' $CORE_PEER_TLS_ROOTCERT_FILE
+   echo 'CORE_PEER_MSPCONFIGPATH' $CORE_PEER_MSPCONFIGPATH
+   echo 'CORE_PEER_ADDRESS' $CORE_PEER_ADDRESS
+   echo 'ORDERER_CA' $ORDERER_CA
+    peer channel update -f $CONFIGTXFILE -c $CHANNEL -o localhost:7050 --tls --cafile $ORDERER_CA
+  { set +x; } 2>/dev/null
+}
 
 
+# fetch latest channel config
 fetchChannelConfig 1 'mychannel' 'config.json'
+
+#create update config
 createConfigUpdate 'mychannel' 'config.json' 'modified_config.json' 'config_update_in_envelope.pb'
 
-
+# sign by org1 admin
 signConfigtxAsPeerOrg 1 'config_update_in_envelope.pb'
+# sign by org2 admin
 signConfigtxAsPeerOrg 2 'config_update_in_envelope.pb'
+# sign by org3 admin
+signConfigtxAsPeerOrg 3 'config_update_in_envelope.pb'
 
+# submit update by org1
+submitConfigUpdateTransaction 1 'mychannel' 'config_update_in_envelope.pb'
 
-setGlobals 3
-
-submitConfigUpdateTransaction 'mychannel' 'config_update_in_envelope.pb'
-
-
+# check for updation
 fetchChannelConfig 3 'mychannel' 'confignew.json'
