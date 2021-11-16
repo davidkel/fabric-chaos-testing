@@ -17,6 +17,19 @@ DELAY=${8:-"3"}
 MAX_RETRY=${9:-"5"}
 VERBOSE=${10:-"false"}
 
+println "executing with the following"
+println "- CHANNEL_NAME: ${C_GREEN}${CHANNEL_NAME}${C_RESET}"
+println "- CC_NAME: ${C_GREEN}${CC_NAME}${C_RESET}"
+
+println "- CC_VERSION: ${C_GREEN}${CC_VERSION}${C_RESET}"
+println "- CC_SEQUENCE: ${C_GREEN}${CC_SEQUENCE}${C_RESET}"
+println "- CC_END_POLICY: ${C_GREEN}${CC_END_POLICY}${C_RESET}"
+println "- CC_COLL_CONFIG: ${C_GREEN}${CC_COLL_CONFIG}${C_RESET}"
+println "- CC_INIT_FCN: ${C_GREEN}${CC_INIT_FCN}${C_RESET}"
+println "- DELAY: ${C_GREEN}${DELAY}${C_RESET}"
+println "- MAX_RETRY: ${C_GREEN}${MAX_RETRY}${C_RESET}"
+println "- VERBOSE: ${C_GREEN}${VERBOSE}${C_RESET}"
+
 FABRIC_CFG_PATH=$PWD/../config/
 
 #User has not provided a name

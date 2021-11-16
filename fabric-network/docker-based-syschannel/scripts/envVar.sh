@@ -12,13 +12,17 @@
 
 export CORE_PEER_TLS_ENABLED=true
 export ORDERER_CA=${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer1.example.com/msp/tlscacerts/tlsca.example.com-cert.pem
+export ORDERER2_CA=${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer2.example.com/msp/tlscacerts/tlsca.example.com-cert.pem
+export ORDERER3_CA=${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer3.example.com/msp/tlscacerts/tlsca.example.com-cert.pem
+export ORDERER4_CA=${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer4.example.com/msp/tlscacerts/tlsca.example.com-cert.pem
+export ORDERER5_CA=${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer5.example.com/msp/tlscacerts/tlsca.example.com-cert.pem
+
 export PEER0_ORG1_CA=${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt
 export PEER0_ORG2_CA=${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt
 export PEER0_ORG3_CA=${PWD}/organizations/peerOrganizations/org3.example.com/peers/peer0.org3.example.com/tls/ca.crt
 export PEER1_ORG1_CA=${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer1.org1.example.com/tls/ca.crt
 export PEER1_ORG2_CA=${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer1.org2.example.com/tls/ca.crt
 export PEER1_ORG3_CA=${PWD}/organizations/peerOrganizations/org3.example.com/peers/peer1.org3.example.com/tls/ca.crt
-
 # Set environment variables for the peer0 org
 setGlobals() {
   local USING_ORG=""
@@ -52,6 +56,8 @@ setGlobals() {
     env | grep CORE
   fi
 }
+
+
 
 # Set environment variables for the peer org
 setGlobalsPeer1() {
@@ -136,3 +142,30 @@ verifyResult() {
     fatalln "$2"
   fi
 }
+
+# Set environment variables for the orderer
+setOrderer(){
+  if [ -z "$OVERRIDE_ORG" ]; then
+    USING_ORG=$1
+  else
+    USING_ORG="${OVERRIDE_ORG}"
+  fi
+  infoln "Using orderer  organization ${USING_ORG}"
+  if [ $USING_ORG -eq 1 ]; then
+    export CORE_PEER_LOCALMSPID="OrdererMSP"
+    export CORE_PEER_TLS_ROOTCERT_FILE=$ORDERER_CA
+    export CORE_PEER_MSPCONFIGPATH=${PWD}/organizations/ordererOrganizations/example.com/users/Admin@example.com/msp
+  elif [ $USING_ORG -eq 2 ]; then
+    export CORE_PEER_LOCALMSPID="OrdererMSP"
+    export CORE_PEER_TLS_ROOTCERT_FILE=$ORDERER2_CA
+    export CORE_PEER_MSPCONFIGPATH=${PWD}/organizations/ordererOrganizations/example.com/users/Admin@example.com/msp
+
+  elif [ $USING_ORG -eq 3 ]; then
+    export CORE_PEER_LOCALMSPID="OrdererMSP"
+    export CORE_PEER_TLS_ROOTCERT_FILE=$PEER1_ORG3_CA
+    export CORE_PEER_MSPCONFIGPATH=${PWD}/organizations/ordererOrganizations/example.com/users/Admin@example.com/msp
+  else
+    errorln "ORG Unknown"
+  fi
+}
+
