@@ -46,7 +46,7 @@ fetchChannelConfig() {
 
   setGlobals $ORG
   export FABRIC_CFG_PATH=$PWD/../config/
-  infoln "Fetching the most recent configuration block for the channel"
+  infoln "$(timestamp) Fetching the most recent configuration block for the channel"
   set -x
   peer channel fetch config config_block.pb -o localhost:7050 --ordererTLSHostnameOverride orderer1.example.com -c $CHANNEL --tls --cafile $ORDERER_CA
   { set +x; } 2>/dev/null
@@ -72,6 +72,7 @@ fetchChannelConfig() {
 # which transitions between the two
 # NOTE: this must be run in a CLI container since it requires configtxlator
 createConfigUpdate() {
+  infoln "$(timestamp) Creating config update"
   CHANNEL=$1
   ORIGINAL=$2
   MODIFIED=$3
@@ -86,47 +87,37 @@ createConfigUpdate() {
   configtxlator proto_encode --input config_update_in_envelope.json --type common.Envelope --output "${OUTPUT}"
 
   { set +x; } 2>/dev/null
-  timestamp
+  infoln " $(timestamp) Completed creating config update "
 }
 
 
 # signConfigtxAsPeerOrg <org> <configtx.pb>
 # Set the peerOrg admin of an org and sign the config update
 signConfigtxAsPeerOrg() {
+    infoln "Signing config update transaction"
 
   ORG=$1
   CONFIGTXFILE=$2
   setOrderer $ORG
   set -x
 
-  # echo 'credentials used'
-  #  echo 'CORE_PEER_LOCALMSPID'   $CORE_PEER_LOCALMSPID
-  #  echo 'CORE_PEER_TLS_ROOTCERT_FILE' $CORE_PEER_TLS_ROOTCERT_FILE
-  #  echo 'CORE_PEER_MSPCONFIGPATH' $CORE_PEER_MSPCONFIGPATH
-  #  echo 'CORE_PEER_ADDRESS' $CORE_PEER_ADDRESS
   peer channel signconfigtx -f "${CONFIGTXFILE}"
   { set +x; } 2>/dev/null
-  echo 'Signed ---------------------'
-  timestamp
+  infoln " $(timestamp) Completed signing the config update process"
 
 }
 # Submit the config update transaction
 submitConfigUpdateTransaction(){
+    infoln "Submitting config update transaction"
     ORG=$1
     CHANNEL=$2
     CONFIGTXFILE=$3
     setGlobals $ORG
    set -x
-  #  echo 'credentials used'
-  #  echo 'CORE_PEER_LOCALMSPID'   $CORE_PEER_LOCALMSPID
-  #  echo 'CORE_PEER_TLS_ROOTCERT_FILE' $CORE_PEER_TLS_ROOTCERT_FILE
-  #  echo 'CORE_PEER_MSPCONFIGPATH' $CORE_PEER_MSPCONFIGPATH
-  #  echo 'CORE_PEER_ADDRESS' $CORE_PEER_ADDRESS
-  #  echo 'ORDERER_CA' $ORDERER_CA
-   peer channel update -f $CONFIGTXFILE -c $CHANNEL -o localhost:7050 --tls --cafile $ORDERER_CA>&mylog.txt
+
+   peer channel update -f $CONFIGTXFILE -c $CHANNEL -o localhost:7050 --tls --cafile $ORDERER_CA
   { set +x; } 2>/dev/null
-  echo 'submitted update--------------------'
-  timestamp
+  infoln " $(timestamp) Submit config update process done"
 }
 
 
@@ -138,8 +129,6 @@ createConfigUpdate 'mychannel' 'config.json' 'modified_config.json' 'config_upda
 
 # sign by org1 admin
 signConfigtxAsPeerOrg 1 'config_update_in_envelope.pb'
-# sign by org2 admin
-
 
 
 
