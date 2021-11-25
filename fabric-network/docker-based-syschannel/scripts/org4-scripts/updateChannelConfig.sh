@@ -45,7 +45,7 @@ signConfigtxAsPeerOrg 1 org4_update_in_envelope.pb
 signConfigtxAsPeerOrg 2 org4_update_in_envelope.pb
 
 
-infoln "Submitting transaction from a different peer (peer0.org2) which also signs it"
+infoln "Submitting transaction from a different peer (peer0.org3) which also signs it"
 setGlobals 3
 set -x
 peer channel update -f org4_update_in_envelope.pb -c ${CHANNEL_NAME} -o orderer1.example.com:7050 --ordererTLSHostnameOverride orderer1.example.com --tls --cafile "$ORDERER_CA"

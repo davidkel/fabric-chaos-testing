@@ -73,30 +73,30 @@ function generateOrg4() {
   fi
 
   # Create crypto material using Fabric CA
-  if [ "$CRYPTO" == "Certificate Authorities" ]; then
-    fabric-ca-client version > /dev/null 2>&1
-    if [[ $? -ne 0 ]]; then
-      echo "ERROR! fabric-ca-client binary not found.."
-      echo
-      echo "Follow the instructions in the Fabric docs to install the Fabric Binaries:"
-      echo "https://hyperledger-fabric.readthedocs.io/en/latest/install.html"
-      exit 1
-    fi
+  # if [ "$CRYPTO" == "Certificate Authorities" ]; then
+  #   fabric-ca-client version > /dev/null 2>&1
+  #   if [[ $? -ne 0 ]]; then
+  #     echo "ERROR! fabric-ca-client binary not found.."
+  #     echo
+  #     echo "Follow the instructions in the Fabric docs to install the Fabric Binaries:"
+  #     echo "https://hyperledger-fabric.readthedocs.io/en/latest/install.html"
+  #     exit 1
+  #   fi
 
-    infoln "Generating certificates using Fabric CA"
-    docker-compose -f $COMPOSE_FILE_CA_ORG4 up -d 2>&1
+  #   infoln "Generating certificates using Fabric CA"
+  #   docker-compose -f $COMPOSE_FILE_CA_ORG4 up -d 2>&1
 
-    . fabric-ca/registerEnroll.sh
+  #   . fabric-ca/registerEnroll.sh
 
-    sleep 10
+  #   sleep 10
 
-    infoln "Creating Org4 Identities"
-    createOrg4
+  #   infoln "Creating Org4 Identities"
+  #   createOrg4
 
-  fi
+  # fi
 
-  infoln "Generating CCP files for Org4"
-  ./ccp-generate.sh
+  # infoln "Generating CCP files for Org4"
+  # ./ccp-generate.sh
 }
 
 # Generate channel configuration transaction
@@ -223,7 +223,7 @@ fi
 #   fi
 # fi
 # parse flags
-echo  $#
+
 while [[ $# -ge 1 ]] ; do
   key="$1"
   echo 'key' $key
@@ -273,7 +273,7 @@ while [[ $# -ge 1 ]] ; do
   shift
 done
 
-echo 'channel' $CHANNEL_NAME
+
 
 # Determine whether starting, stopping, restarting or generating for announce
 if [ "$MODE" == "up" ]; then
@@ -284,7 +284,7 @@ elif [ "$MODE" == "down" ]; then
 elif [ "$MODE" == "generate" ]; then
   EXPMODE="Generating certs and organization definition for Org4"
 elif [ "$MODE" == "deployCC" ]; then
-  EXPMODE="dePLOYING CC"
+  EXPMODE="Deploying Chaincode"
 else
   printHelp
   exit 1

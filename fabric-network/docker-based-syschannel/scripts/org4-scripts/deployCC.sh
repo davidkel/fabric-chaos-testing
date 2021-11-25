@@ -205,15 +205,15 @@ queryCommitted() {
 ## package the chaincode
 packageChaincode
 
-## Install chaincode on peer0.org1 and peer0.org2
-infoln "Installing chaincode on peer0.org1..."
+## Install chaincode on peer0.org4
+infoln "Installing chaincode on peer0.org4..."
 installChaincode 4
 
 
 ## query whether the chaincode is installed
 queryInstalled 4
 
-## approve the definition for org1
+## approve the definition for org4
 approveForMyOrg 4
 
 
