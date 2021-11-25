@@ -26,6 +26,13 @@ to set it to an explicit majority endorsement policy
 
 (TODO: Is there are way to return it to an implicit majority policy ?)
 
+# To change Endorsement policy
+- ./network.sh changeCCEndorsement -ccn basic  -ccs 2
+
+# To add new Org to the channel
+In fabric-network/docker-based-syschannel/addOrg4
+- ./addOrg4.sh up
+
 ## bring up the client
 Make sure you are using Node 14 or higher LTS release
 In client
