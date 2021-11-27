@@ -9,8 +9,13 @@ CC_SRC_LANGUAGE=${4}
 CC_VERSION=${5:-"1.0"}
 CC_SEQUENCE=${6:-"1"}
 CC_INIT_FCN=${7:-"NA"}
-#CC_END_POLICY=${8:-"NA"}
-CC_END_POLICY="OR(AND('Org1MSP.member','Org2MSP.member'),AND('Org1MSP.member','Org3MSP.member'),AND('Org3MSP.member','Org2MSP.member'))"
+# Default
+CC_END_POLICY=${8:-"NA"}
+# explicit majority
+# CC_END_POLICY="OR(AND('Org1MSP.member','Org2MSP.member'),AND('Org1MSP.member','Org3MSP.member'),AND('Org3MSP.member','Org2MSP.member'))"
+# explicit all
+# CC_END_POLICY="AND('Org1MSP.member','Org2MSP.member','Org3MSP.member')"
+
 CC_COLL_CONFIG=${9:-"NA"}
 DELAY=${10:-"3"}
 MAX_RETRY=${11:-"5"}

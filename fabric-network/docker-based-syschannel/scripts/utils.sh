@@ -69,8 +69,30 @@ function printHelp() {
     println "   \033[0;32mdeployCC\033[0m -ccn -ccl -ccv -ccs -ccp -cci -r -d -verbose"
     println
     println " Examples:"
-    println "   network.sh deployCC -ccn basic -ccp ../asset-transfer-basic/chaincode-javascript/ ./ -ccl javascript"
+    println "   network.sh deployCC -ccn basic -ccp ../../chaincode/node -ccl typescript"
     println "   network.sh deployCC -ccn mychaincode -ccp ./user/mychaincode -ccv 1 -ccl javascript"
+  elif [ "$USAGE" == "changeCCEndorsement" ]; then
+    println "Usage: "
+    println "  network.sh \033[0;32mchangeCCEndorsement\033[0m [Flags]"
+    println
+    println "    Flags:"
+    println "    -c <channel name> - Name of channel to deploy chaincode to"
+    println "    -ccn <name> - Chaincode name."
+    println "    -ccv <version>  - Chaincode version. 1.0 (default), v2, version3.x, etc"
+    println "    -ccs <sequence>  - Chaincode definition sequence. Must be an integer, 1 (default), 2, 3, etc"
+    println "    -ccep <policy>  - (Optional) Chaincode endorsement policy using signature policy syntax. The default policy requires an endorsement from Org1 and Org2"
+#    println "    -cccg <collection-config>  - (Optional) File path to private data collections configuration file"
+    println "    -cci <fcn name>  - (Optional) Name of chaincode initialization function. When a function is provided, the execution of init will be requested and the function will be invoked."
+    println
+    println "    -h - Print this message"
+    println
+    println " Possible Mode and flag combinations"
+    println "   \033[0;32mchangeCCEndorsement\033[0m -ccn -ccv -ccs -ccep -cccg -cci -r -d -verbose"
+    println
+    println " Examples:"
+    println "   network.sh changeCCEndorsement -ccn basic -ccs 2 --ccep \"OR(AND('Org1MSP.member','Org2MSP.member'),AND('Org1MSP.member','Org3MSP.member'),AND('Org3MSP.member','Org2MSP.member'))\""
+    println "   network.sh changeCCEndorsement -ccn mychaincode -ccp ./user/mychaincode -ccv 1 -ccl javascript"
+
   else
     println "Usage: "
     println "  network.sh <Mode> [Flags]"
@@ -79,6 +101,7 @@ function printHelp() {
     println "      \033[0;32mup createChannel\033[0m - Bring up fabric network with one channel"
     println "      \033[0;32mcreateChannel\033[0m - Create and join a channel after the network is created"
     println "      \033[0;32mdeployCC\033[0m - Deploy a chaincode to a channel (defaults to asset-transfer-basic)"
+    println "      \033[0;32mchangeCCEndorsement\033[0m - Alter the endorsement policy of an existing chaincode on a channel"
     println "      \033[0;32mdown\033[0m - Bring down the network"
     println
     println "    Flags:"
@@ -110,6 +133,7 @@ function printHelp() {
     println "   \033[0;32mup createChannel\033[0m -ca -c -r -d -s -i -cai -verbose"
     println "   \033[0;32mcreateChannel\033[0m -c -r -d -verbose"
     println "   \033[0;32mdeployCC\033[0m -ccn -ccl -ccv -ccs -ccp -cci -r -d -verbose"
+    println "   \033[0;32mchangeCCEndorsement\033[0m -c -ccn -ccv -ccs -ccep -r -d -verbose"
     println
     println " Examples:"
     println "   network.sh up createChannel -ca -c mychannel -s couchdb -i 2.0.0"
