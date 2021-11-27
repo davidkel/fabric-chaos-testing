@@ -11,25 +11,11 @@ CC_NAME=${2}
 CC_VERSION=${3:-"1.0"}
 CC_SEQUENCE=${4:-"1"}
 CC_INIT_FCN=${5:-"NA"}
-CC_END_POLICY="OR(AND('Org1MSP.member','Org2MSP.member'),AND('Org1MSP.member','Org3MSP.member'),AND('Org3MSP.member','Org2MSP.member'))"
-
-CC_COLL_CONFIG=${6:-"NA"}
-DELAY=${7:-"3"}
-MAX_RETRY=${8:-"5"}
-VERBOSE=${9:-"false"}
-
-println "executing with the following"
-println "- CHANNEL_NAME: ${C_GREEN}${CHANNEL_NAME}${C_RESET}"
-println "- CC_NAME: ${C_GREEN}${CC_NAME}${C_RESET}"
-
-println "- CC_VERSION: ${C_GREEN}${CC_VERSION}${C_RESET}"
-println "- CC_SEQUENCE: ${C_GREEN}${CC_SEQUENCE}${C_RESET}"
-println "- CC_END_POLICY: ${C_GREEN}${CC_END_POLICY}${C_RESET}"
-println "- CC_COLL_CONFIG: ${C_GREEN}${CC_COLL_CONFIG}${C_RESET}"
-println "- CC_INIT_FCN: ${C_GREEN}${CC_INIT_FCN}${C_RESET}"
-println "- DELAY: ${C_GREEN}${DELAY}${C_RESET}"
-println "- MAX_RETRY: ${C_GREEN}${MAX_RETRY}${C_RESET}"
-println "- VERBOSE: ${C_GREEN}${VERBOSE}${C_RESET}"
+CC_END_POLICY=${6:-"NA"}
+CC_COLL_CONFIG=${7:-"NA"}
+DELAY=${8:-"3"}
+MAX_RETRY=${9:-"5"}
+VERBOSE=${10:-"false"}
 
 FABRIC_CFG_PATH=$PWD/../config/
 
@@ -38,7 +24,6 @@ if [ -z "$CC_NAME" ] || [ "$CC_NAME" = "NA" ]; then
   fatalln "No chaincode name was provided. Valid call example: ./network.sh changeCCEndorsement -ccn basic  -ccs 2"
 fi
 
-
 INIT_REQUIRED="--init-required"
 # check if the init fcn should be called
 if [ "$CC_INIT_FCN" = "NA" ]; then
@@ -46,7 +31,7 @@ if [ "$CC_INIT_FCN" = "NA" ]; then
 fi
 
 if [ "$CC_END_POLICY" = "NA" ]; then
-  CC_END_POLICY=""
+  CC_END_POLICY="--signature-policy AND('Org1MSP.member','Org2MSP.member','Org3MSP.member')"
 else
   CC_END_POLICY="--signature-policy $CC_END_POLICY"
 fi
@@ -56,6 +41,18 @@ if [ "$CC_COLL_CONFIG" = "NA" ]; then
 else
   CC_COLL_CONFIG="--collections-config $CC_COLL_CONFIG"
 fi
+
+println "executing with the following"
+println "- CHANNEL_NAME: ${C_GREEN}${CHANNEL_NAME}${C_RESET}"
+println "- CC_NAME: ${C_GREEN}${CC_NAME}${C_RESET}"
+println "- CC_VERSION: ${C_GREEN}${CC_VERSION}${C_RESET}"
+println "- CC_SEQUENCE: ${C_GREEN}${CC_SEQUENCE}${C_RESET}"
+println "- CC_END_POLICY: ${C_GREEN}${CC_END_POLICY}${C_RESET}"
+println "- CC_COLL_CONFIG: ${C_GREEN}${CC_COLL_CONFIG}${C_RESET}"
+println "- CC_INIT_FCN: ${C_GREEN}${CC_INIT_FCN}${C_RESET}"
+println "- DELAY: ${C_GREEN}${DELAY}${C_RESET}"
+println "- MAX_RETRY: ${C_GREEN}${MAX_RETRY}${C_RESET}"
+println "- VERBOSE: ${C_GREEN}${VERBOSE}${C_RESET}"
 
 # import utils
 . scripts/envVar.sh
@@ -220,5 +217,3 @@ commitChaincodeDefinition 1 2 3
 queryCommitted 1
 queryCommitted 2
 queryCommitted 3
-
-
