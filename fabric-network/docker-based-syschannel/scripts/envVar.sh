@@ -162,7 +162,7 @@ setOrderer(){
 
   elif [ $USING_ORG -eq 3 ]; then
     export CORE_PEER_LOCALMSPID="OrdererMSP"
-    export CORE_PEER_TLS_ROOTCERT_FILE=$PEER1_ORG3_CA
+    export CORE_PEER_TLS_ROOTCERT_FILE=$ORDERER3_CA
     export CORE_PEER_MSPCONFIGPATH=${PWD}/organizations/ordererOrganizations/example.com/users/Admin@example.com/msp
   else
     errorln "ORG Unknown"

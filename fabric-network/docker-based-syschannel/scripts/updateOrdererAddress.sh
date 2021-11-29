@@ -14,8 +14,8 @@
 FABRIC_CFG_PATH=$PWD/../config/
 export CH_NAME='mychannel'
 
-generateCypto(){
-function generateOrdererCrypto() {
+
+generateOrdererCrypto() {
   # Create crypto material using cryptogen
 
     which cryptogen
@@ -34,7 +34,7 @@ function generateOrdererCrypto() {
       fatalln "Failed to generate certificates..."
     fi
 }
-}
+
 verifyChannelConfig() {
   timestamp
   ORG=$1
@@ -66,6 +66,8 @@ fetchChannelConfig() {
   OUTPUT=$3
 
 
+  TLS_FILE=${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer2.example.com/tls/server.crt
+
   setGlobals $ORG
   export FABRIC_CFG_PATH=$PWD/../config/
   infoln "$(timestamp) Fetching the most recent configuration block for the channel"
@@ -81,10 +83,20 @@ fetchChannelConfig() {
   jq .data.data[0].payload.data.config config_block.json > "${OUTPUT}"
 
   #copy config to modified config
-  cp config.json modified_config.json
-  # edit orderer address
+  # cp ${OUTPUT} modified_config.json
+
+  # edit orderer address and tls cert
   tmp=$(mktemp)
-  jq '.channel_group.groups.Orderer.groups.OrdererOrg.values.Endpoints.value.addresses[1] = "orderer2.example.com:7057" | .channel_group.groups.Orderer.values.ConsensusType.value.metadata.consenters[1].port=7057 ' modified_config.json > "$tmp" && mv "$tmp" modified_config.json
+  jq '.channel_group.groups.Orderer.groups.OrdererOrg.values.Endpoints.value.addresses[1] = "orderer2.example.com:7057"'  ${OUTPUT} > modified_config.json
+  echo "{\"client_tls_cert\":\"$(cat $TLS_FILE | base64)\",\"host\":\"orderer2.example.com\",\"port\":7057,\"server_tls_cert\":\"$(cat $TLS_FILE | base64)\"}" > $PWD/ordererconsenter.json
+
+
+
+
+  obj=`cat $PWD/ordererconsenter.json`
+  echo "$obj"
+  tmp=$(mktemp)
+  jq '.channel_group.groups.Orderer.values.ConsensusType.value.metadata.consenters[1] = '$obj'' modified_config.json > "$tmp" && mv "$tmp" modified_config.json
 
   { set +x; } 2>/dev/null
 }
@@ -142,12 +154,12 @@ submitConfigUpdateTransaction(){
   infoln " $(timestamp) Submit config update process done"
 }
 
-generateCypto
+generateOrdererCrypto
 
 # fetch latest channel config
 fetchChannelConfig 1 'mychannel' 'config.json'
 
-#create update config
+# create update config
 createConfigUpdate 'mychannel' 'config.json' 'modified_config.json' 'config_update_in_envelope.pb'
 
 # sign by org1 admin
