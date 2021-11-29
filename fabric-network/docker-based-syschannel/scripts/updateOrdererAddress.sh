@@ -13,6 +13,28 @@
 # NOTE: this must be run in a CLI container since it requires configtxlator
 FABRIC_CFG_PATH=$PWD/../config/
 export CH_NAME='mychannel'
+
+generateCypto(){
+function generateOrdererCrypto() {
+  # Create crypto material using cryptogen
+
+    which cryptogen
+    if [ "$?" -ne 0 ]; then
+      fatalln "cryptogen tool not found. exiting"
+    fi
+    infoln "Generating certificates using cryptogen tool"
+
+    infoln "Creating orderer Identities"
+
+    set -x
+    cryptogen extend --config=./organizations/cryptogen/crypto-config-update-orderer.yaml --input="${PWD}/organizations"
+    res=$?
+    { set +x; } 2>/dev/null
+    if [ $res -ne 0 ]; then
+      fatalln "Failed to generate certificates..."
+    fi
+}
+}
 verifyChannelConfig() {
   timestamp
   ORG=$1
@@ -120,6 +142,7 @@ submitConfigUpdateTransaction(){
   infoln " $(timestamp) Submit config update process done"
 }
 
+generateCypto
 
 # fetch latest channel config
 fetchChannelConfig 1 'mychannel' 'config.json'
