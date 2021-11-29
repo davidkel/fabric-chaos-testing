@@ -179,56 +179,46 @@ fetchConfigBlock(){
 
 
 
-
+# generate crypto for new orderer
 generateOrdererCrypto
 
-
+# fetch latest config block from sysytem channel
 fetchChannelConfig 1 'system-channel ' 'config_block'
+# create config update for system channel
 createConfigUpdateTLS 'system-channel' 'config.json' 'modified_config.json' 'config_update_in_envelope.pb'
+# sign the config update
 signConfigtxAsPeerOrg 1 'config_update_in_envelope.pb'
 
-
+# submit update in system channel
 submitConfigUpdateTransaction 1 'system-channel' 'config_update_in_envelope.pb'
 
-
+# fetch latest config and move the config block to channel artifacts
 fetchConfigBlock 1 'system-channel'
 
-
+# start new orderer container
 startNewOrderer
 
 
-
-
+# fetch latest config block from sysytem channel
 fetchChannelConfig 1 'system-channel ' 'config_block'
-
-
+# update endpoint info in  sysytem channel
 createConfigUpdateEndpoint 'system-channel' 'config.json' 'modified_config.json' 'config_update_in_envelope.pb'
-
+# sign the update
 signConfigtxAsPeerOrg 1 'config_update_in_envelope.pb'
-
-
+# submit update in system channel
 submitConfigUpdateTransaction 1 'system-channel' 'config_update_in_envelope.pb'
 
-
+# Application channel updates
 
 fetchChannelConfig 1 'mychannel ' 'config_block'
-
-
 createConfigUpdateTLS 'mychannel' 'config.json' 'modified_config.json' 'config_update_in_envelope.pb'
-
-
 signConfigtxAsPeerOrg 1 'config_update_in_envelope.pb'
-
-
 submitConfigUpdateTransaction 1 'mychannel' 'config_update_in_envelope.pb'
-
-
 fetchChannelConfig 1 'mychannel ' 'config_block'
 
 
 createConfigUpdateEndpoint
 createConfigUpdateEndpoint 'mychannel' 'config.json' 'modified_config.json' 'config_update_in_envelope.pb'
-
 signConfigtxAsPeerOrg 1 'config_update_in_envelope.pb'
 submitConfigUpdateTransaction 1 'mychannel' 'config_update_in_envelope.pb'
 
