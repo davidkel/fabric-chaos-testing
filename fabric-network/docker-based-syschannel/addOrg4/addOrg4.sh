@@ -72,31 +72,6 @@ function generateOrg4() {
 
   fi
 
-  # Create crypto material using Fabric CA
-  # if [ "$CRYPTO" == "Certificate Authorities" ]; then
-  #   fabric-ca-client version > /dev/null 2>&1
-  #   if [[ $? -ne 0 ]]; then
-  #     echo "ERROR! fabric-ca-client binary not found.."
-  #     echo
-  #     echo "Follow the instructions in the Fabric docs to install the Fabric Binaries:"
-  #     echo "https://hyperledger-fabric.readthedocs.io/en/latest/install.html"
-  #     exit 1
-  #   fi
-
-  #   infoln "Generating certificates using Fabric CA"
-  #   docker-compose -f $COMPOSE_FILE_CA_ORG4 up -d 2>&1
-
-  #   . fabric-ca/registerEnroll.sh
-
-  #   sleep 10
-
-  #   infoln "Creating Org4 Identities"
-  #   createOrg4
-
-  # fi
-
-  # infoln "Generating CCP files for Org4"
-  # ./ccp-generate.sh
 }
 
 # Generate channel configuration transaction
@@ -158,11 +133,6 @@ function addOrg4 () {
     fatalln "ERROR !!!! Unable to join Org4 peers to network"
   fi
 
-  # infoln "CC Deploy"
-  # docker exec cli ./scripts/org4-scripts/deployCC.sh $CHANNEL_NAME $CC_NAME $CC_SRC_PATH $CC_SRC_LANGUAGE $CC_VERSION $CC_SEQUENCE $CC_INIT_FCN $CC_END_POLICY $CC_COLL_CONFIG $CLI_DELAY $MAX_RETRY $VERBOSE
-  # if [ $? -ne 0 ]; then
-  #   fatalln "ERROR !!!! Unable to deploy chaincode"
-  # fi
 }
 function deployCC(){
   infoln "CC Deploy"
@@ -214,15 +184,7 @@ else
   shift
 fi
 
-# # parse a deployCC subcommand if used
-# if [[ $# -ge 1 ]] ; then
-#   key="$1"
-#   if [[ "$key" == "deployCC" ]]; then
-#       export MODE="deployCC"
-#       shift
-#   fi
-# fi
-# parse flags
+
 
 while [[ $# -ge 1 ]] ; do
   key="$1"
