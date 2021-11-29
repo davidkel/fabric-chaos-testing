@@ -32,6 +32,9 @@ to set it to an explicit majority endorsement policy
 # To add new Org to the channel
 In fabric-network/docker-based-syschannel/addOrg4
 - ./addOrg4.sh up
+To deploy chaincode to new org
+- ./addOrg4.sh deployCC
+
 
 ## bring up the client
 Make sure you are using Node 14 or higher LTS release
