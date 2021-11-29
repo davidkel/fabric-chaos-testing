@@ -27,13 +27,6 @@ MAX_RETRY=1
 
 # joinChannel ORG
 joinChannel() {
-
-echo $CORE_PEER_TLS_ENABLED
-echo $CORE_PEER_LOCALMSPID
-echo $CORE_PEER_TLS_ROOTCERT_FILE
-echo $CORE_PEER_MSPCONFIGPATH
-echo $CORE_PEER_ADDRESS
-
   timestamp
   ORG=$1
   local rc=1

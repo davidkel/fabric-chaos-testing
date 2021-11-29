@@ -27,13 +27,13 @@ to set it to an explicit majority endorsement policy
 (TODO: Is there are way to return it to an implicit majority policy ?)
 
 # To change Endorsement policy
-- ./network.sh changeCCEndorsement -ccn basic  -ccs 2
+- ./network.sh changeCCEndorsement -ccn basic -ccs 2
 
 # To add new Org to the channel
 In fabric-network/docker-based-syschannel/addOrg4
 - ./addOrg4.sh up
 To deploy chaincode to new org
-- ./addOrg4.sh deployCC
+- ./addOrg4.sh deployCC -ccn basic -ccp ../../chaincode/node -ccl typescript
 
 
 ## bring up the client

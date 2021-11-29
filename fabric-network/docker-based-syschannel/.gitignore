@@ -2,13 +2,5 @@ log.txt
 *.tar.gz
 *.block
 *.tx
-config_block.json
-config_block.pb
-config.json
-modified_config.json
-config_update_in_envelope.json
-config_update_in_envelope.pb
-config_update.json
-config_update.pb
-modified_config.pb
-config.pb
+*json
+*.pb

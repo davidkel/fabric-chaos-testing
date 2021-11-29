@@ -24,6 +24,8 @@ cd ..
 cd addOrg4
 ./addOrg4.sh up -c channel2
 ```
+To deploy chaincode to new org
+- ./addOrg4.sh deployCC -ccn <chaincode_name> -ccp <path_to_chaincode> -ccl <chaincode_language>
 
 For more information, use `./addOrg4.sh -h` to see the `addOrg4.sh` help text.
 

@@ -20,12 +20,13 @@ export VERBOSE=false
 # Print the usage message
 function printHelp () {
   echo "Usage: "
-  echo "  addOrg4.sh up|down|generate [-c <channel name>] [-t <timeout>] [-d <delay>] [-f <docker-compose-file>] [-s <dbtype>]"
+  echo "  addOrg4.sh up|down|generate|deployCC [-c <channel name>] [-t <timeout>] [-d <delay>] [-f <docker-compose-file>] [-s <dbtype>]"
   echo "  addOrg4.sh -h|--help (print this message)"
   echo "    <mode> - one of 'up', 'down', or 'generate'"
   echo "      - 'up' - add org4 to the sample network. You need to bring up the test network and create a channel first."
   echo "      - 'down' - bring down the test network and org4 nodes"
   echo "      - 'generate' - generate required certificates and org definition"
+  echo "      - 'deployCC' - deploy Chaincode on org4"
   echo "    -c <channel name> - test network channel name (defaults to \"mychannel\")"
   echo "    -ca <use CA> -  Use a CA to generate the crypto material"
   echo "    -t <timeout> - CLI timeout duration in seconds (defaults to 10)"
@@ -39,6 +40,7 @@ function printHelp () {
   echo "	addOrg4.sh generate"
   echo "	addOrg4.sh up"
   echo "	addOrg4.sh up -c mychannel -s couchdb"
+  echo "	addOrg4.sh deployCC -ccn basic -ccp ../../chaincode/node -ccl typescript"
   echo "	addOrg4.sh down"
   echo
   echo "Taking all defaults:"
@@ -135,11 +137,10 @@ function addOrg4 () {
 
 }
 function deployCC(){
-  infoln "CC Deploy"
-  docker exec cli ./scripts/org4-scripts/deployCC.sh $CHANNEL_NAME $CC_NAME $CC_SRC_PATH $CC_SRC_LANGUAGE $CC_VERSION $CC_SEQUENCE $CC_INIT_FCN $CC_END_POLICY $CC_COLL_CONFIG $CLI_DELAY $MAX_RETRY $VERBOSE
-  if [ $? -ne 0 ]; then
-    fatalln "ERROR !!!!  Unable to deploy chaincode"
-  fi
+  infoln "Deploying chaincode on org4"
+  cd ..
+  source scripts/deployCC.sh $CHANNEL_NAME $CC_NAME $CC_SRC_PATH $CC_SRC_LANGUAGE $CC_VERSION $CC_SEQUENCE $CC_INIT_FCN $CC_END_POLICY $CC_COLL_CONFIG $CLI_DELAY $MAX_RETRY $VERBOSE
+  deployCCOnNewOrg
 }
 
 
@@ -188,8 +189,6 @@ fi
 
 while [[ $# -ge 1 ]] ; do
   key="$1"
-  echo 'key' $key
-  echo 'CHANNEL_NAME' $CHANNEL_NAME
   case $key in
   -h )
     printHelp
@@ -234,7 +233,6 @@ while [[ $# -ge 1 ]] ; do
   esac
   shift
 done
-
 
 
 # Determine whether starting, stopping, restarting or generating for announce

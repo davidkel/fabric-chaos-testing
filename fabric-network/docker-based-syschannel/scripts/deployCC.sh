@@ -9,13 +9,7 @@ CC_SRC_LANGUAGE=${4}
 CC_VERSION=${5:-"1.0"}
 CC_SEQUENCE=${6:-"1"}
 CC_INIT_FCN=${7:-"NA"}
-# Default
 CC_END_POLICY=${8:-"NA"}
-# explicit majority
-# CC_END_POLICY="OR(AND('Org1MSP.member','Org2MSP.member'),AND('Org1MSP.member','Org3MSP.member'),AND('Org3MSP.member','Org2MSP.member'))"
-# explicit all
-# CC_END_POLICY="AND('Org1MSP.member','Org2MSP.member','Org3MSP.member')"
-
 CC_COLL_CONFIG=${9:-"NA"}
 DELAY=${10:-"3"}
 MAX_RETRY=${11:-"5"}
@@ -137,6 +131,18 @@ installChaincode() {
   verifyResult $res "Chaincode installation on peer0.org${ORG} has failed"
   successln "Chaincode is installed on peer0.org${ORG}"
 
+  # setGlobalsPeer1 $ORG
+  # set -x
+  # peer lifecycle chaincode install ${CC_NAME}.tar.gz >&log.txt
+  # res=$?
+  # { set +x; } 2>/dev/null
+  # cat log.txt
+  # verifyResult $res "Chaincode installation on peer1.org${ORG} has failed"
+  # successln "Chaincode is installed on peer1.org${ORG}"
+
+}
+installChaincodePeer1(){
+  ORG=$1
   setGlobalsPeer1 $ORG
   set -x
   peer lifecycle chaincode install ${CC_NAME}.tar.gz >&log.txt
@@ -160,6 +166,19 @@ queryInstalled() {
   verifyResult $res "Query installed on peer0.org${ORG} has failed"
   successln "Query installed successful on peer0.org${ORG} on channel"
 
+  # setGlobalsPeer1 $ORG
+  # set -x
+  # peer lifecycle chaincode queryinstalled >&log.txt
+  # res=$?
+  # { set +x; } 2>/dev/null
+  # cat log.txt
+  # PACKAGE_ID=$(sed -n "/${CC_NAME}_${CC_VERSION}/{s/^Package ID: //; s/, Label:.*$//; p;}" log.txt)
+  # verifyResult $res "Query installed on peer1.org${ORG} has failed"
+  # successln "Query installed successful on peer1.org${ORG} on channel"
+
+}
+queryInstalledPeer1(){
+  ORG=$1
   setGlobalsPeer1 $ORG
   set -x
   peer lifecycle chaincode queryinstalled >&log.txt
@@ -169,7 +188,6 @@ queryInstalled() {
   PACKAGE_ID=$(sed -n "/${CC_NAME}_${CC_VERSION}/{s/^Package ID: //; s/, Label:.*$//; p;}" log.txt)
   verifyResult $res "Query installed on peer1.org${ORG} has failed"
   successln "Query installed successful on peer1.org${ORG} on channel"
-
 }
 
 # approveForMyOrg VERSION PEER ORG
@@ -314,13 +332,22 @@ packageChaincode
 ## Install chaincode on peer0.org1 and peer0.org2
 infoln "Installing chaincode on peer0.org1..."
 installChaincode 1
+infoln "Installing chaincode on peer1.org1..."
+installChaincodePeer1 1
 infoln "Install chaincode on peer0.org2..."
 installChaincode 2
-infoln "Install chaincode on peer0.org2..."
+infoln "Installing chaincode on peer1.org2..."
+installChaincodePeer1 2
+infoln "Install chaincode on peer0.org3..."
 installChaincode 3
+infoln "Installing chaincode on peer1.org3..."
+installChaincodePeer1 3
 
-## query whether the chaincode is installed
+
+## query whether the chaincode is installed on peer0.org1
 queryInstalled 1
+## query whether the chaincode is installed on peer1.org1
+queryInstalledPeer1 1
 
 ## approve the definition for org1
 approveForMyOrg 1
@@ -366,3 +393,24 @@ else
 fi
 
 exit 0
+
+
+deployCCOnNewOrg(){
+  ## package the chaincode
+packageChaincode
+
+## Install chaincode on peer0.org4
+infoln "Installing chaincode on peer0.org4..."
+installChaincode 4
+
+
+## query whether the chaincode is installed
+queryInstalled 4
+
+## approve the definition for org4
+approveForMyOrg 4
+
+## query on both orgs to see that the definition committed successfully
+queryCommitted 4
+
+}
