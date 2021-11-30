@@ -2,3 +2,10 @@ log.txt
 *.tar.gz
 *.block
 *.tx
+
+*.json
+*.pb
+
+
+
+
