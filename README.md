@@ -26,6 +26,10 @@ to set it to an explicit majority endorsement policy
 
 (TODO: Is there are way to return it to an implicit majority policy ?)
 
+## Update orderer address
+
+- ./scripts/updateOrdererAddress.sh
+
 ## bring up the client
 Make sure you are using Node 14 or higher LTS release
 In client

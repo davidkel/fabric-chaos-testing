@@ -12,7 +12,7 @@
 # Writes the current channel config for a given channel to a JSON file
 # NOTE: this must be run in a CLI container since it requires configtxlator
 FABRIC_CFG_PATH=$PWD/../config/
-export CH_NAME='mychannel'
+COMPOSE_FILE_ORDERER_UPDATE='ordererUpdate.yaml'
 
 
 generateOrdererCrypto() {
@@ -42,7 +42,15 @@ verifyChannelConfig() {
   OUTPUT=$3
 
 
-  setGlobals $ORG
+  if [ $CHANNEL == 'system-channel' ]
+  then
+   echo "setting orderer env variables"
+   setOrderer $ORG
+  else
+   echo "setting peer env variables"
+   setGlobals $ORG
+  fi
+
   export FABRIC_CFG_PATH=$PWD/../config/
   infoln "Fetching the most recent configuration block for the channel"
   set -x
@@ -64,11 +72,22 @@ fetchChannelConfig() {
   ORG=$1
   CHANNEL=$2
   OUTPUT=$3
+  MODIFIED=$4
+
+
 
 
   TLS_FILE=${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer2.example.com/tls/server.crt
 
-  setGlobals $ORG
+  if [ $CHANNEL == 'system-channel' ]
+  then
+   echo "setting orderer env variables"
+   setOrderer $ORG
+  else
+   echo "setting peer env variables"
+   setGlobals $ORG
+  fi
+
   export FABRIC_CFG_PATH=$PWD/../config/
   infoln "$(timestamp) Fetching the most recent configuration block for the channel"
   set -x
@@ -82,21 +101,18 @@ fetchChannelConfig() {
   # filter requird data
   jq .data.data[0].payload.data.config config_block.json > "${OUTPUT}"
 
-  #copy config to modified config
-  # cp ${OUTPUT} modified_config.json
 
   # edit orderer address and tls cert
   tmp=$(mktemp)
-  jq '.channel_group.groups.Orderer.groups.OrdererOrg.values.Endpoints.value.addresses[1] = "orderer2.example.com:7057"'  ${OUTPUT} > modified_config.json
+  jq '.channel_group.groups.Orderer.groups.OrdererOrg.values.Endpoints.value.addresses[1] = "orderer2.example.com:7057"'  ${OUTPUT} > ${MODIFIED}
   echo "{\"client_tls_cert\":\"$(cat $TLS_FILE | base64)\",\"host\":\"orderer2.example.com\",\"port\":7057,\"server_tls_cert\":\"$(cat $TLS_FILE | base64)\"}" > $PWD/ordererconsenter.json
 
 
 
 
-  obj=`cat $PWD/ordererconsenter.json`
-  echo "$obj"
+  ordererconsenter=`cat $PWD/ordererconsenter.json`
   tmp=$(mktemp)
-  jq '.channel_group.groups.Orderer.values.ConsensusType.value.metadata.consenters[1] = '$obj'' modified_config.json > "$tmp" && mv "$tmp" modified_config.json
+  jq '.channel_group.groups.Orderer.values.ConsensusType.value.metadata.consenters[1] = '$ordererconsenter'' ${MODIFIED} > "$tmp" && mv "$tmp" ${MODIFIED}
 
   { set +x; } 2>/dev/null
 }
@@ -142,22 +158,79 @@ signConfigtxAsPeerOrg() {
 }
 # Submit the config update transaction
 submitConfigUpdateTransaction(){
-    infoln "Submitting config update transaction"
-    ORG=$1
-    CHANNEL=$2
-    CONFIGTXFILE=$3
-    setGlobals $ORG
-   set -x
+  infoln "$(timestamp) Submitting config update transaction"
+  ORG=$1
+  CHANNEL=$2
+  CONFIGTXFILE=$3
+  if [ $CHANNEL == 'system-channel' ]
+  then
+   echo "setting orderer env variables"
+   setOrderer $ORG
+  else
+   echo "setting peer  env variables"
+   setGlobals $ORG
+  fi
 
+   set -x
    peer channel update -f $CONFIGTXFILE -c $CHANNEL -o localhost:7050 --tls --cafile $ORDERER_CA
   { set +x; } 2>/dev/null
   infoln " $(timestamp) Submit config update process done"
 }
+startOrderer(){
+  infoln " $(timestamp) Recreating orderer container at new port"
+  docker-compose -f docker/${COMPOSE_FILE_ORDERER_UPDATE} up -d
+  docker ps
+}
+stopOrderer(){
+  infoln " $(timestamp) stopping orderer container at old port"
+  docker stop orderer2.example.com
+  docker ps
+}
+fetchConfigBlock(){
 
+    infoln "Fetch latest block from channel ${2}"
+    ORG=$1
+    CHANNEL=$2
+    setOrderer $ORG
+    peer channel fetch config channel-artifacts/latest_config.block -o localhost:7050 --ordererTLSHostnameOverride  orderer1.example.com  -c ${CHANNEL} --tls --cafile $ORDERER_CA
+    docker cp cli:/opt/gopath/src/github.com/hyperledger/fabric/peer/channel-artifacts/latest_config.block ./channel-artifacts/latest_config.block
+}
+
+
+# # stop orderer at old port
+# stopOrderer
+
+# #remove old cypto
+# rm -r organizations/ordererOrganizations/example.com/orderers/orderer2.example.com
+
+
+
+# Update crypto for orderer
 generateOrdererCrypto
 
+# Update system channel
+
 # fetch latest channel config
-fetchChannelConfig 1 'mychannel' 'config.json'
+fetchChannelConfig 1 'system-channel' 'sys-config.json' 'sys-modified_config.json'
+
+# create update config
+createConfigUpdate 'system-channel' 'sys-config.json' 'sys-modified_config.json' 'sys-config_update_in_envelope.pb'
+
+# sign by org1 admin
+signConfigtxAsPeerOrg 1 'sys-config_update_in_envelope.pb'
+
+# submit update by org1
+submitConfigUpdateTransaction 1 'system-channel' 'sys-config_update_in_envelope.pb'
+
+# check for updation
+verifyChannelConfig 1 'system-channel' 'sys-confignew.json'
+
+
+
+# # Update application channel
+
+# fetch latest channel config
+fetchChannelConfig 1 'mychannel' 'config.json' 'modified_config.json'
 
 # create update config
 createConfigUpdate 'mychannel' 'config.json' 'modified_config.json' 'config_update_in_envelope.pb'
@@ -172,3 +245,11 @@ submitConfigUpdateTransaction 1 'mychannel' 'config_update_in_envelope.pb'
 
 # check for updation
 verifyChannelConfig 1 'mychannel' 'confignew.json'
+
+
+
+fetchConfigBlock 1 'system-channel'
+
+
+#start orderer at new port
+startOrderer
