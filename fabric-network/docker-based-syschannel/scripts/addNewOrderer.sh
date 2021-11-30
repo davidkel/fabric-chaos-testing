@@ -64,7 +64,7 @@ fetchChannelConfig() {
 
   infoln "Decoding config block to JSON and isolating config to ${OUTPUT}"
   set -x
-  configtxlator proto_decode --input config_block.pb --type common.Block --output ${OUTPUT}.json
+  configtxlator proto_decode --input config_block.pb --type common.Block --output ${OUTPUT}
   { set +x; } 2>/dev/null
 
 
@@ -83,8 +83,7 @@ createConfigUpdateTLS() {
   OUTPUT=$4
 
   TLS_FILE=${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer6.example.com/tls/server.crt
-  echo ${TLS_FILE}
-  echo 'path' ${PWD}
+
 
   set -x
   # filter requird data
@@ -92,7 +91,7 @@ createConfigUpdateTLS() {
 
   # edit orderer address
   echo "{\"client_tls_cert\":\"$(cat $TLS_FILE | base64)\",\"host\":\"orderer6.example.com\",\"port\":7056,\"server_tls_cert\":\"$(cat $TLS_FILE | base64)\"}" > $PWD/org6consenter.json
-  jq ".channel_group.groups.Orderer.values.ConsensusType.value.metadata.consenters += [$(cat org6consenter.json)]" config.json > modified_config.json
+  jq ".channel_group.groups.Orderer.values.ConsensusType.value.metadata.consenters += [$(cat org6consenter.json)]" ${ORIGINAL} > ${MODIFIED}
 
   configtxlator proto_encode --input "${ORIGINAL}" --type common.Config --output config.pb
   configtxlator proto_encode --input "${MODIFIED}" --type common.Config --output modified_config.pb
@@ -151,11 +150,11 @@ signConfigtxAsPeerOrg() {
 # Submit the config update transaction
 submitConfigUpdateTransaction(){
 
-    infoln "Submitting config update transaction"
-    ORG=$1
-    CHANNEL=$2
-    CONFIGTXFILE=$3
-    setOrderer $ORG
+  infoln "Submitting config update transaction"
+  ORG=$1
+  CHANNEL=$2
+  CONFIGTXFILE=$3
+  setOrderer $ORG
    set -x
 
    peer channel update -f $CONFIGTXFILE -c $CHANNEL -o localhost:7050 --tls --cafile $ORDERER_CA
@@ -183,7 +182,7 @@ fetchConfigBlock(){
 generateOrdererCrypto
 
 # fetch latest config block from sysytem channel
-fetchChannelConfig 1 'system-channel ' 'config_block'
+fetchChannelConfig 1 'system-channel ' 'config_block.json'
 # create config update for system channel
 createConfigUpdateTLS 'system-channel' 'config.json' 'modified_config.json' 'config_update_in_envelope.pb'
 # sign the config update
@@ -204,7 +203,7 @@ fetchChannelConfig 1 'system-channel ' 'config_block'
 # update endpoint info in  sysytem channel
 createConfigUpdateEndpoint 'system-channel' 'config.json' 'modified_config.json' 'config_update_in_envelope.pb'
 # sign the update
-signConfigtxAsPeerOrg 1 'config_update_in_envelope.pb'
+# signConfigtxAsPeerOrg 1 'config_update_in_envelope.pb'
 # submit update in system channel
 submitConfigUpdateTransaction 1 'system-channel' 'config_update_in_envelope.pb'
 
@@ -212,14 +211,15 @@ submitConfigUpdateTransaction 1 'system-channel' 'config_update_in_envelope.pb'
 
 fetchChannelConfig 1 'mychannel ' 'config_block'
 createConfigUpdateTLS 'mychannel' 'config.json' 'modified_config.json' 'config_update_in_envelope.pb'
-signConfigtxAsPeerOrg 1 'config_update_in_envelope.pb'
+# signConfigtxAsPeerOrg 1 'config_update_in_envelope.pb'
 submitConfigUpdateTransaction 1 'mychannel' 'config_update_in_envelope.pb'
 fetchChannelConfig 1 'mychannel ' 'config_block'
 
 
 createConfigUpdateEndpoint
 createConfigUpdateEndpoint 'mychannel' 'config.json' 'modified_config.json' 'config_update_in_envelope.pb'
-signConfigtxAsPeerOrg 1 'config_update_in_envelope.pb'
+# signConfigtxAsPeerOrg 1 'config_update_in_envelope.pb'
 submitConfigUpdateTransaction 1 'mychannel' 'config_update_in_envelope.pb'
 
-
+#verify latest block
+fetchChannelConfig 1 'mychannel ' 'latest.json'

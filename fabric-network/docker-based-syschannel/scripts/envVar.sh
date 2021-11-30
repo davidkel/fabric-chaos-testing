@@ -187,7 +187,7 @@ setOrderer(){
     export CORE_PEER_LOCALMSPID="OrdererMSP"
     export CORE_PEER_TLS_ROOTCERT_FILE=$ORDERER5_CA
     export CORE_PEER_MSPCONFIGPATH=${PWD}/organizations/ordererOrganizations/example.com/users/Admin@example.com/msp
-    export CORE_PEER_ADDRESS=orderer4.example.com:7054
+    export CORE_PEER_ADDRESS=orderer5.example.com:7054
   else
     errorln "ORG Unknown"
   fi
