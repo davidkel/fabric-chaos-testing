@@ -43,53 +43,6 @@ createChannel() {
 	verifyResult $res "Channel creation failed"
 }
 
-# joinChannel ORG
-joinChannel() {
-  FABRIC_CFG_PATH=$PWD/../config/
-  ORG=$1
-  setGlobals $ORG
-
-  local rc=1
-  local COUNTER=1
-
-	## Sometimes Join takes time, hence retry
-  while [ $rc -ne 0 -a $COUNTER -lt $MAX_RETRY ] ; do
-    sleep $DELAY
-    set -x
-    peer channel join -b $BLOCKFILE >&log.txt
-    res=$?
-    { set +x; } 2>/dev/null
-		let rc=$res
-		COUNTER=$(expr $COUNTER + 1)
-  done
-
-  cat log.txt
-  verifyResult $res "After $MAX_RETRY attempts, peer0.org${ORG} has failed to join channel '$CHANNEL_NAME' "
-
-  setGlobalsPeer1 $ORG
-
-  local rc=1
-  local COUNTER=1
-
-	## Sometimes Join takes time, hence retry
-  while [ $rc -ne 0 -a $COUNTER -lt $MAX_RETRY ] ; do
-    sleep $DELAY
-    set -x
-    peer channel join -b $BLOCKFILE >&log.txt
-    res=$?
-    { set +x; } 2>/dev/null
-		let rc=$res
-		COUNTER=$(expr $COUNTER + 1)
-  done
-
-  cat log.txt
-  verifyResult $res "After $MAX_RETRY attempts, peer1.org${ORG} has failed to join channel '$CHANNEL_NAME' "
-}
-
-setAnchorPeer() {
-  ORG=$1
-  docker exec cli ./scripts/setAnchorPeer.sh $ORG $CHANNEL_NAME
-}
 
 FABRIC_CFG_PATH=${PWD}/configtx
 
@@ -105,20 +58,18 @@ infoln "Creating channel ${CHANNEL_NAME}"
 createChannel
 successln "Channel '$CHANNEL_NAME' created"
 
-## Join all the peers to the channel
-infoln "Joining org1 peer to the channel..."
-joinChannel 1
-infoln "Joining org2 peer to the channel..."
-joinChannel 2
-infoln "Joining org3 peer to the channel..."
-joinChannel 3
+# Join org1 - org3 peers to channel
+scripts/joinChannel.sh 1 $CHANNEL_NAME $DELAY $VERBOSE
 
-## Set the anchor peers for each org in the channel
-infoln "Setting anchor peer for org1..."
-setAnchorPeer 1
-infoln "Setting anchor peer for org2..."
-setAnchorPeer 2
-infoln "Setting anchor peer for org3..."
-setAnchorPeer 3
+scripts/joinChannel.sh 2 $CHANNEL_NAME $DELAY $VERBOSE
 
-successln "Channel '$CHANNEL_NAME' joined"
+scripts/joinChannel.sh 3 $CHANNEL_NAME $DELAY $VERBOSE
+
+# Set Org1 - Org3 Anchor peers
+scripts/setAnchorPeer.sh 1 $CHANNEL_NAME
+
+scripts/setAnchorPeer.sh 2 $CHANNEL_NAME
+
+scripts/setAnchorPeer.sh 3 $CHANNEL_NAME
+
+successln "Channel '$CHANNEL_NAME' joined by Org1, Org2 and Org3"

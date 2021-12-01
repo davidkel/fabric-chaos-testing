@@ -2,26 +2,28 @@
 
 source scripts/utils.sh
 
-CHANNEL_NAME=${1:-"mychannel"}
-CC_NAME=${2}
-CC_SRC_PATH=${3}
-CC_SRC_LANGUAGE=${4}
-CC_VERSION=${5:-"1.0"}
-CC_SEQUENCE=${6:-"1"}
-CC_INIT_FCN=${7:-"NA"}
+CHANNEL_NAME=${2:-"mychannel"}
+CC_NAME=${3}
+CC_SRC_PATH=${4}
+CC_SRC_LANGUAGE=${5}
+CC_VERSION=${6:-"1.0"}
+CC_SEQUENCE=${7:-"1"}
+CC_INIT_FCN=${8:-"NA"}
 # Default
-CC_END_POLICY=${8:-"NA"}
+CC_END_POLICY=${9:-"NA"}
 # explicit majority
 # CC_END_POLICY="OR(AND('Org1MSP.member','Org2MSP.member'),AND('Org1MSP.member','Org3MSP.member'),AND('Org3MSP.member','Org2MSP.member'))"
 # explicit all
 # CC_END_POLICY="AND('Org1MSP.member','Org2MSP.member','Org3MSP.member')"
 
-CC_COLL_CONFIG=${9:-"NA"}
-DELAY=${10:-"3"}
-MAX_RETRY=${11:-"5"}
-VERBOSE=${12:-"false"}
+CC_COLL_CONFIG=${10:-"NA"}
+DELAY=${11:-"3"}
+MAX_RETRY=${12:-"5"}
+VERBOSE=${13:-"false"}
+TARGETS=${1:-"main"}
 
 println "executing with the following"
+println "- TARGETS: ${C_GREEN}${TARGETS}${C_RESET}"
 println "- CHANNEL_NAME: ${C_GREEN}${CHANNEL_NAME}${C_RESET}"
 println "- CC_NAME: ${C_GREEN}${CC_NAME}${C_RESET}"
 println "- CC_SRC_PATH: ${C_GREEN}${CC_SRC_PATH}${C_RESET}"
@@ -134,6 +136,7 @@ installChaincode() {
   res=$?
   { set +x; } 2>/dev/null
   cat log.txt
+  # TODO: If already installed error then this isn't a problem, but how to test for that ?
   verifyResult $res "Chaincode installation on peer0.org${ORG} has failed"
   successln "Chaincode is installed on peer0.org${ORG}"
 
@@ -143,6 +146,7 @@ installChaincode() {
   res=$?
   { set +x; } 2>/dev/null
   cat log.txt
+  # TODO: If already installed error then this isn't a problem, but how to test for that
   verifyResult $res "Chaincode installation on peer1.org${ORG} has failed"
   successln "Chaincode is installed on peer1.org${ORG}"
 }
@@ -308,61 +312,88 @@ chaincodeQuery() {
   fi
 }
 
-## package the chaincode
-packageChaincode
+deployToMainOrgs() {
 
-## Install chaincode on peer0.org1 and peer0.org2
-infoln "Installing chaincode on peer0.org1..."
-installChaincode 1
-infoln "Install chaincode on peer0.org2..."
-installChaincode 2
-infoln "Install chaincode on peer0.org2..."
-installChaincode 3
+  ## package the chaincode
+  packageChaincode
 
-## query whether the chaincode is installed
-queryInstalled 1
+  ## Install chaincode on peer0.org1 and peer0.org2
+  infoln "Installing chaincode on peer0.org1..."
+  installChaincode 1
+  infoln "Install chaincode on peer0.org2..."
+  installChaincode 2
+  infoln "Install chaincode on peer0.org2..."
+  installChaincode 3
 
-## approve the definition for org1
-approveForMyOrg 1
+  ## query whether the chaincode is installed
+  queryInstalled 1
 
-## check whether the chaincode definition is ready to be committed
-## expect org1 to have approved and org2 not to
-checkCommitReadiness 1 "\"Org1MSP\": true" "\"Org2MSP\": false" "\"Org3MSP\": false"
-checkCommitReadiness 2 "\"Org1MSP\": true" "\"Org2MSP\": false" "\"Org3MSP\": false"
-checkCommitReadiness 3 "\"Org1MSP\": true" "\"Org2MSP\": false" "\"Org3MSP\": false"
+  ## approve the definition for org1
+  approveForMyOrg 1
 
-## now approve also for org2
-approveForMyOrg 2
+  ## check whether the chaincode definition is ready to be committed
+  ## expect org1 to have approved and org2 not to
+  checkCommitReadiness 1 "\"Org1MSP\": true" "\"Org2MSP\": false" "\"Org3MSP\": false"
+  checkCommitReadiness 2 "\"Org1MSP\": true" "\"Org2MSP\": false" "\"Org3MSP\": false"
+  checkCommitReadiness 3 "\"Org1MSP\": true" "\"Org2MSP\": false" "\"Org3MSP\": false"
 
-## check whether the chaincode definition is ready to be committed
-## expect them both to have approved
-checkCommitReadiness 1 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": false"
-checkCommitReadiness 2 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": false"
-checkCommitReadiness 3 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": false"
+  ## now approve also for org2
+  approveForMyOrg 2
 
-## now approve also for org3
-approveForMyOrg 3
+  ## check whether the chaincode definition is ready to be committed
+  ## expect them both to have approved
+  checkCommitReadiness 1 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": false"
+  checkCommitReadiness 2 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": false"
+  checkCommitReadiness 3 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": false"
 
-## check whether the chaincode definition is ready to be committed
-## expect them both to have approved
-checkCommitReadiness 1 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true"
-checkCommitReadiness 2 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true"
-checkCommitReadiness 3 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true"
+  ## now approve also for org3
+  approveForMyOrg 3
 
-## now that we know for sure both orgs have approved, commit the definition
-commitChaincodeDefinition 1 2 3
+  ## check whether the chaincode definition is ready to be committed
+  ## expect them both to have approved
+  checkCommitReadiness 1 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true"
+  checkCommitReadiness 2 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true"
+  checkCommitReadiness 3 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true"
 
-## query on both orgs to see that the definition committed successfully
-queryCommitted 1
-queryCommitted 2
-queryCommitted 3
+  ## now that we know for sure main orgs have approved, commit the definition
+  commitChaincodeDefinition 1 2 3
 
-## Invoke the chaincode - this does require that the chaincode have the 'initLedger'
-## method defined
-if [ "$CC_INIT_FCN" = "NA" ]; then
-  infoln "Chaincode initialization is not required"
+  ## query on main orgs to see that the definition committed successfully
+  queryCommitted 1
+  queryCommitted 2
+  queryCommitted 3
+
+  ## Invoke the chaincode - this does require that the chaincode have the 'initLedger'
+  ## method defined
+  if [ "$CC_INIT_FCN" = "NA" ]; then
+    infoln "Chaincode initialization is not required"
+  else
+    chaincodeInvokeInit 1 2 3
+  fi
+}
+
+deployToOrg4() {
+  ## package the chaincode
+  packageChaincode
+
+  infoln "Installing chaincode on Org4 Peers..."
+  installChaincode 4
+
+  ## query whether the chaincode is installed
+  queryInstalled 4
+
+  ## approve the definition for org4
+  approveForMyOrg 4
+
+  # commitChaincodeDefinition 1 2 3 4
+
+  queryCommitted 4
+}
+
+if [ "$TARGETS" = "main" ]; then
+  deployToMainOrgs
 else
-  chaincodeInvokeInit 1 2 3
+  deployToOrg4
 fi
 
 exit 0

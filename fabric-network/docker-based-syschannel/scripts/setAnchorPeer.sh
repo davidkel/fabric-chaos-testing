@@ -1,7 +1,5 @@
 #!/bin/bash
 #
-# Copyright IBM Corp. All Rights Reserved.
-#
 # SPDX-License-Identifier: Apache-2.0
 #
 
@@ -9,6 +7,8 @@
 . scripts/envVar.sh
 . scripts/configUpdate.sh
 
+export PATH=${PWD}/../bin:$PATH
+export FABRIC_CFG_PATH=$PWD/../config/
 
 # NOTE: this must be run in a CLI container since it requires jq and configtxlator
 createAnchorPeerUpdate() {
@@ -26,6 +26,9 @@ createAnchorPeerUpdate() {
   elif [ $ORG -eq 3 ]; then
     HOST="peer0.org3.example.com"
     PORT=11051
+  elif [ $ORG -eq 4 ]; then
+    HOST="peer0.org4.example.com"
+    PORT=12051
   else
     errorln "Org${ORG} unknown"
   fi
@@ -42,8 +45,10 @@ createAnchorPeerUpdate() {
 }
 
 updateAnchorPeer() {
-  peer channel update -o orderer1.example.com:7050 --ordererTLSHostnameOverride orderer1.example.com -c $CHANNEL_NAME -f ${CORE_PEER_LOCALMSPID}anchors.tx --tls --cafile $ORDERER_CA >&log.txt
+  set -x
+  peer channel update -o localhost:7050 --ordererTLSHostnameOverride orderer1.example.com -c $CHANNEL_NAME -f ${CORE_PEER_LOCALMSPID}anchors.tx --tls --cafile $ORDERER_CA >&log.txt
   res=$?
+  { set +x; } 2>/dev/null
   cat log.txt
   verifyResult $res "Anchor peer update failed"
   successln "Anchor peer set for org '$CORE_PEER_LOCALMSPID' on channel '$CHANNEL_NAME'"
@@ -51,8 +56,9 @@ updateAnchorPeer() {
 
 ORG=$1
 CHANNEL_NAME=$2
-setGlobalsCLI $ORG
+setGlobals $ORG
 
+infoln "Setting anchor peer for org${ORG}..."
 createAnchorPeerUpdate
 
 updateAnchorPeer

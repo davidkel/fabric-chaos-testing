@@ -1,21 +1,19 @@
 #!/bin/bash
 #
-# Copyright IBM Corp. All Rights Reserved.
-#
 # SPDX-License-Identifier: Apache-2.0
 #
 source scripts/utils.sh
-
-CHANNEL_NAME=${1:-"mychannel"}
-CC_NAME=${2}
-CC_VERSION=${3:-"1.0"}
-CC_SEQUENCE=${4:-"1"}
-CC_INIT_FCN=${5:-"NA"}
-CC_END_POLICY=${6:-"NA"}
-CC_COLL_CONFIG=${7:-"NA"}
-DELAY=${8:-"3"}
-MAX_RETRY=${9:-"5"}
-VERBOSE=${10:-"false"}
+TARGETS=${1}
+CHANNEL_NAME=${2:-"mychannel"}
+CC_NAME=${3}
+CC_VERSION=${4:-"1.0"}
+CC_SEQUENCE=${5:-"1"}
+CC_INIT_FCN=${6:-"NA"}
+CC_END_POLICY=${7:-"NA"}
+CC_COLL_CONFIG=${8:-"NA"}
+DELAY=${9:-"3"}
+MAX_RETRY=${10:-"5"}
+VERBOSE=${11:-"false"}
 
 println "executing with the following"
 println "- CHANNEL_NAME: ${C_GREEN}${CHANNEL_NAME}${C_RESET}"
@@ -34,7 +32,7 @@ FABRIC_CFG_PATH=$PWD/../config/
 
 #User has not provided a name
 if [ -z "$CC_NAME" ] || [ "$CC_NAME" = "NA" ]; then
-  fatalln "No chaincode name was provided. Valid call example: ./network.sh changeCCEndorsement -ccn basic  -ccs 2"
+  fatalln "No chaincode name was provided. Valid call example: ./network.sh changeCCEndorsement -ccn basic -ccs 2"
 fi
 
 INIT_REQUIRED="--init-required"
@@ -44,7 +42,12 @@ if [ "$CC_INIT_FCN" = "NA" ]; then
 fi
 
 if [ "$CC_END_POLICY" = "NA" ]; then
-  CC_END_POLICY="--signature-policy AND('Org1MSP.member','Org2MSP.member','Org3MSP.member')"
+  if [ "$TARGETS" = "all" ]; then
+    CC_END_POLICY="--signature-policy AND('Org1MSP.member','Org2MSP.member','Org3MSP.member','Org4MSP.member')"
+  else
+    CC_END_POLICY="--signature-policy AND('Org1MSP.member','Org2MSP.member','Org3MSP.member')"
+  fi
+
 else
   CC_END_POLICY="--signature-policy $CC_END_POLICY"
 fi
@@ -56,6 +59,7 @@ else
 fi
 
 println "executing with the following"
+println "- TARGETS: ${C_GREEN}${TARGETS}${C_RESET}"
 println "- CHANNEL_NAME: ${C_GREEN}${CHANNEL_NAME}${C_RESET}"
 println "- CC_NAME: ${C_GREEN}${CC_NAME}${C_RESET}"
 println "- CC_VERSION: ${C_GREEN}${CC_VERSION}${C_RESET}"
@@ -222,11 +226,24 @@ checkCommitReadiness 1 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": tru
 checkCommitReadiness 2 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true"
 checkCommitReadiness 3 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true"
 
-## now that we know for sure both orgs have approved, commit the definition
-commitChaincodeDefinition 1 2 3
-
-
-## query on both orgs to see that the definition committed successfully
-queryCommitted 1
-queryCommitted 2
-queryCommitted 3
+#TODO support 4th org properly
+if [ "$TARGETS" = "all" ]; then
+  approveForMyOrg 4
+  checkCommitReadiness 1 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true" "\"Org4MSP\": true"
+  checkCommitReadiness 2 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true" "\"Org4MSP\": true"
+  checkCommitReadiness 3 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true" "\"Org4MSP\": true"
+  checkCommitReadiness 4 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true" "\"Org4MSP\": true"
+  ## now that we know for sure both orgs have approved, commit the definition
+  commitChaincodeDefinition 1 2 3 4
+  ## query on all orgs to see that the definition committed successfully
+  queryCommitted 1
+  queryCommitted 2
+  queryCommitted 3
+  queryCommitted 4
+else
+  commitChaincodeDefinition 1 2 3
+  ## query on main orgs to see that the definition committed successfully
+  queryCommitted 1
+  queryCommitted 2
+  queryCommitted 3
+fi

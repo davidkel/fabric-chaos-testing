@@ -26,6 +26,39 @@ to set it to an explicit majority endorsement policy
 
 (TODO: Is there are way to return it to an implicit majority policy ?)
 
+Note it is important to remember your current sequence number set by ccs for other activities
+
+## adding another organisation
+
+this expects that you have already brought the main network up, created a channel and deployed chaincode. Make sure you know your current sequence number as well as your deployed employment policy
+
+To add Org4 to the environment and join the peers to the channel
+- ./org4.sh up
+
+To deploy chaincode to those peers you need the current chaincode definition sequence and the endorsement policy. So for example if you haven't changed the endorsement policy yet then
+- ./org4.sh deployCC -ccn basic -ccp ../../chaincode/node -ccl typescript
+
+should suffice. If you have changed the endorsement policy eg AND('Org1MSP.member','Org2MSP.member','Org3MSP.member') which is the inbuilt default for ./network.sh changeCCEndorsement then you might need
+- ./org4.sh deployCC -ccn basic -ccp ../../chaincode/node -ccl typescript -ccs 2 -ccep "AND('Org1MSP.member','Org2MSP.member','Org3MSP.member')"
+
+### changing endorsement policy
+
+Once org4 is up you should use the org4.sh script to change endorsement policies rather than network.sh, eg
+
+- ./org4.sh changeCCEndorsement -ccn basic -ccs 2
+
+This will set it to all 4 orgs required as the default
+
+- ./org4.sh changeCCEndorsement -ccn basic -ccs 3 -ccep "OR(AND('Org1MSP.member','Org2MSP.member','Org4MSP.member'),AND('Org1MSP.member','Org2MSP.member','Org3MSP.member'),AND('Org1MSP.member','Org3MSP.member','Org4MSP.member'),AND('Org2MSP.member','Org3MSP.member','Org4MSP.member'))"
+
+to give an explicit majority for the 4 orgs
+
+Make sure you increment the sequence number by 1. As the scripts are not atomic you can leave yourself in a partial state where some actions have succeeded and some have not.
+
+### bringing the whole network down.
+
+You can use either `./network.sh down` or `./org4.sh down` to bring the network down.
+
 ## Update orderer address
 
 - ./scripts/updateOrdererAddress.sh
