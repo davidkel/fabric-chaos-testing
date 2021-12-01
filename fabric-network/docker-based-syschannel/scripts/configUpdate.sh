@@ -1,7 +1,5 @@
 #!/bin/bash
 #
-# Copyright IBM Corp. All Rights Reserved.
-#
 # SPDX-License-Identifier: Apache-2.0
 #
 
@@ -20,7 +18,7 @@ fetchChannelConfig() {
 
   infoln "Fetching the most recent configuration block for the channel"
   set -x
-  peer channel fetch config config_block.pb -o orderer1.example.com:7050 --ordererTLSHostnameOverride orderer1.example.com -c $CHANNEL --tls --cafile $ORDERER_CA
+  peer channel fetch config config_block.pb -o localhost:7050 --ordererTLSHostnameOverride orderer1.example.com -c $CHANNEL --tls --cafile $ORDERER_CA
   { set +x; } 2>/dev/null
 
   infoln "Decoding config block to JSON and isolating config to ${OUTPUT}"
