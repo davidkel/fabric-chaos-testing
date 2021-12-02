@@ -13,10 +13,6 @@ VERBOSE="$4"
 : ${MAX_RETRY:="5"}
 : ${VERBOSE:="false"}
 
-if [ ! -d "channel-artifacts" ]; then
-	mkdir channel-artifacts
-fi
-
 createChannelTx() {
 	set -x
 	configtxgen -profile ApplicationGenesis -outputCreateChannelTx ./channel-artifacts/${CHANNEL_NAME}.tx -channelID $CHANNEL_NAME

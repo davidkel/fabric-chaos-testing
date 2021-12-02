@@ -18,6 +18,11 @@ export VERBOSE=false
 
 . scripts/utils.sh
 
+# Create channel-artifacts here otherwise docker will create the dir as root which then causes other stuff to fail
+if [ ! -d "channel-artifacts" ]; then
+	mkdir channel-artifacts
+fi
+
 # Obtain CONTAINER_IDS and remove them
 # TODO Might want to make this optional - could clear other containers
 # This function is called when you bring a network down

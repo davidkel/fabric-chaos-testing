@@ -45,13 +45,14 @@ createAnchorPeerUpdate() {
 }
 
 updateAnchorPeer() {
+  timestamp
   set -x
   peer channel update -o localhost:7050 --ordererTLSHostnameOverride orderer1.example.com -c $CHANNEL_NAME -f ${CORE_PEER_LOCALMSPID}anchors.tx --tls --cafile $ORDERER_CA >&log.txt
   res=$?
   { set +x; } 2>/dev/null
   cat log.txt
   verifyResult $res "Anchor peer update failed"
-  successln "Anchor peer set for org '$CORE_PEER_LOCALMSPID' on channel '$CHANNEL_NAME'"
+  successln "$(timestamp) Anchor peer set for org '$CORE_PEER_LOCALMSPID' on channel '$CHANNEL_NAME'"
 }
 
 ORG=$1
