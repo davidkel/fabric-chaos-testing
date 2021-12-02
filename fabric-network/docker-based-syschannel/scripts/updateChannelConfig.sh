@@ -49,8 +49,9 @@ signConfigtxAsPeerOrg 2 org4_update_in_envelope.pb
 
 infoln "Submitting transaction from a different peer (peer0.org3) which also signs it"
 setGlobals 3
+timestamp
 set -x
 peer channel update -f org4_update_in_envelope.pb -c ${CHANNEL_NAME} -o localhost:7050 --ordererTLSHostnameOverride orderer1.example.com --tls --cafile "$ORDERER_CA"
 { set +x; } 2>/dev/null
 
-successln "Config transaction to add org4 to network submitted"
+successln "$(timestamp) Config transaction to add org4 to network submitted"
