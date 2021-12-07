@@ -184,12 +184,12 @@ generateOrdererCrypto
 # fetch latest config block from sysytem channel
 fetchChannelConfig 1 'system-channel ' 'config_block.json'
 # create config update for system channel
-createConfigUpdateTLS 'system-channel' 'config.json' 'modified_config.json' 'config_update_in_envelope.pb'
+createConfigUpdateTLS 'system-channel' 'config.json' 'modified_config.json' 'config_update_in_envelope1.pb'
 # sign the config update
-signConfigtxAsPeerOrg 1 'config_update_in_envelope.pb'
+signConfigtxAsPeerOrg 1 'config_update_in_envelope1.pb'
 
 # submit update in system channel
-submitConfigUpdateTransaction 1 'system-channel' 'config_update_in_envelope.pb'
+submitConfigUpdateTransaction 1 'system-channel' 'config_update_in_envelope1.pb'
 
 # fetch latest config and move the config block to channel artifacts
 fetchConfigBlock 1 'system-channel'
@@ -199,27 +199,27 @@ startNewOrderer
 
 
 # fetch latest config block from sysytem channel
-fetchChannelConfig 1 'system-channel ' 'config_block'
+fetchChannelConfig 1 'system-channel ' 'config_block.json'
 # update endpoint info in  sysytem channel
-createConfigUpdateEndpoint 'system-channel' 'config.json' 'modified_config.json' 'config_update_in_envelope.pb'
+createConfigUpdateEndpoint 'system-channel' 'config.json' 'modified_config2.json' 'config_update_in_envelope2.pb'
 # sign the update
-# signConfigtxAsPeerOrg 1 'config_update_in_envelope.pb'
+signConfigtxAsPeerOrg 1 'config_update_in_envelope.pb'
 # submit update in system channel
-submitConfigUpdateTransaction 1 'system-channel' 'config_update_in_envelope.pb'
+submitConfigUpdateTransaction 1 'system-channel' 'config_update_in_envelope2.pb'
 
 # Application channel updates
 
-fetchChannelConfig 1 'mychannel ' 'config_block'
-createConfigUpdateTLS 'mychannel' 'config.json' 'modified_config.json' 'config_update_in_envelope.pb'
-# signConfigtxAsPeerOrg 1 'config_update_in_envelope.pb'
-submitConfigUpdateTransaction 1 'mychannel' 'config_update_in_envelope.pb'
+fetchChannelConfig 1 'mychannel ' 'config_block.json'
+createConfigUpdateTLS 'mychannel' 'config.json' 'modified_config.json3' 'config_update_in_envelope3.pb'
+signConfigtxAsPeerOrg 1 'config_update_in_envelope.pb'
+submitConfigUpdateTransaction 1 'mychannel' 'config_update_in_envelope3.pb'
 fetchChannelConfig 1 'mychannel ' 'config_block'
 
 
 createConfigUpdateEndpoint
-createConfigUpdateEndpoint 'mychannel' 'config.json' 'modified_config.json' 'config_update_in_envelope.pb'
-# signConfigtxAsPeerOrg 1 'config_update_in_envelope.pb'
-submitConfigUpdateTransaction 1 'mychannel' 'config_update_in_envelope.pb'
+createConfigUpdateEndpoint 'mychannel' 'config.json' 'modified_config.json4' 'config_update_in_envelope4.pb'
+signConfigtxAsPeerOrg 1 'config_update_in_envelope.pb'
+submitConfigUpdateTransaction 1 'mychannel' 'config_update_in_envelope4.pb'
 
 #verify latest block
 fetchChannelConfig 1 'mychannel ' 'latest.json'
