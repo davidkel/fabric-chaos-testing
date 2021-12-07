@@ -17,9 +17,6 @@ OrdererOrgs:
     # "Specs" - See PeerOrgs for complete description
     # ---------------------------------------------------------------------------
     Specs:
-      - Hostname: orderer
-        SANS:
-          - localhost
       - Hostname: orderer6
         SANS:
           - localhost

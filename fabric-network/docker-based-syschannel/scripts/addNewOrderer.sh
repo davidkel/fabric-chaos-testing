@@ -8,13 +8,12 @@
 # import utils
 . scripts/envVar.sh
 
-# fetchChannelConfig <org> <channel_id> <output_json>
-# Writes the current channel config for a given channel to a JSON file
-# NOTE: this must be run in a CLI container since it requires configtxlator
+
 
 COMPOSE_FILES=docker-compose-new-orderer.yaml
 FABRIC_CFG_PATH=$PWD/../config/
 export CH_NAME='mychannel'
+
 
 startNewOrderer(){
 
@@ -48,6 +47,10 @@ function generateOrdererCrypto() {
 }
 
 
+# fetchChannelConfig <org> <channel_id> <output_json>
+# Writes the current channel config for a given channel to a JSON file
+# NOTE: this must be run in a CLI container since it requires configtxlator
+
 fetchChannelConfig() {
   timestamp
   ORG=$1
@@ -55,10 +58,10 @@ fetchChannelConfig() {
   OUTPUT=$3
   setOrderer $ORG
   export FABRIC_CFG_PATH=$PWD/../config/
-
+  echo '--------------------' $ORDERER
   infoln "$(timestamp) Fetching the most recent configuration block for the channel ${CHANNEL}"
   set -x
-  peer channel fetch config config_block.pb -o localhost:7050 --ordererTLSHostnameOverride  orderer1.example.com --tls --cafile $ORDERER_CA -c ${CHANNEL}
+  peer channel fetch config config_block.pb -o localhost:7050 --ordererTLSHostnameOverride  orderer1.example.com --tls --cafile $ORDERER -c ${CHANNEL}
   { set +x; } 2>/dev/null
 
 
@@ -157,7 +160,7 @@ submitConfigUpdateTransaction(){
   setOrderer $ORG
    set -x
 
-   peer channel update -f $CONFIGTXFILE -c $CHANNEL -o localhost:7050 --tls --cafile $ORDERER_CA
+   peer channel update -f $CONFIGTXFILE -c $CHANNEL -o localhost:7050 --tls --cafile $ORDERER
   { set +x; } 2>/dev/null
   infoln " $(timestamp) Submit config update process done"
 }
@@ -169,7 +172,7 @@ fetchConfigBlock(){
     ORG=$1
     CHANNEL=$2
     setOrderer $ORG
-    peer channel fetch config channel-artifacts/latest_config.block -o localhost:7050 --ordererTLSHostnameOverride  orderer1.example.com  -c ${CHANNEL} --tls --cafile $ORDERER_CA
+    peer channel fetch config channel-artifacts/latest_config.block -o localhost:7050 --ordererTLSHostnameOverride  orderer1.example.com  -c ${CHANNEL} --tls --cafile $ORDERER
     docker cp cli:/opt/gopath/src/github.com/hyperledger/fabric/peer/channel-artifacts/latest_config.block ./channel-artifacts/latest_config.block
 
 
@@ -184,42 +187,79 @@ generateOrdererCrypto
 # fetch latest config block from sysytem channel
 fetchChannelConfig 1 'system-channel ' 'config_block.json'
 # create config update for system channel
-createConfigUpdateTLS 'system-channel' 'config.json' 'modified_config.json' 'config_update_in_envelope1.pb'
+createConfigUpdateTLS 'system-channel' 'config.json' 'modified_config.json' 'config_update_in_envelope.pb'
 # sign the config update
-signConfigtxAsPeerOrg 1 'config_update_in_envelope1.pb'
+# signConfigtxAsPeerOrg 1 'config_update_in_envelope.pb'
+
+
+
+
+echo $CORE_PEER_MSPCONFIGPATH
+echo $CORE_PEER_ADDRESS
+echo $CORE_PEER_LOCALMSPID
+echo $CORE_PEER_TLS_ROOTCERT_FILE
+echo $ORDERER
+
 
 # submit update in system channel
-submitConfigUpdateTransaction 1 'system-channel' 'config_update_in_envelope1.pb'
+submitConfigUpdateTransaction 1 'system-channel' 'config_update_in_envelope.pb'
 
 # fetch latest config and move the config block to channel artifacts
 fetchConfigBlock 1 'system-channel'
 
-# start new orderer container
-startNewOrderer
 
 
 # fetch latest config block from sysytem channel
 fetchChannelConfig 1 'system-channel ' 'config_block.json'
 # update endpoint info in  sysytem channel
-createConfigUpdateEndpoint 'system-channel' 'config.json' 'modified_config2.json' 'config_update_in_envelope2.pb'
+createConfigUpdateEndpoint 'system-channel' 'config.json' 'modified_config.json' 'config_update_in_envelope.pb'
 # sign the update
-signConfigtxAsPeerOrg 1 'config_update_in_envelope.pb'
+# signConfigtxAsPeerOrg 1 'config_update_in_envelope.pb'
+
+
+echo $CORE_PEER_MSPCONFIGPATH
+echo $CORE_PEER_ADDRESS
+echo $CORE_PEER_LOCALMSPID
+echo $CORE_PEER_TLS_ROOTCERT_FILE
+echo $ORDERER
 # submit update in system channel
-submitConfigUpdateTransaction 1 'system-channel' 'config_update_in_envelope2.pb'
+submitConfigUpdateTransaction 1 'system-channel' 'config_update_in_envelope.pb'
+
+
+# start new orderer container
+startNewOrderer
 
 # Application channel updates
 
 fetchChannelConfig 1 'mychannel ' 'config_block.json'
-createConfigUpdateTLS 'mychannel' 'config.json' 'modified_config.json3' 'config_update_in_envelope3.pb'
-signConfigtxAsPeerOrg 1 'config_update_in_envelope.pb'
-submitConfigUpdateTransaction 1 'mychannel' 'config_update_in_envelope3.pb'
-fetchChannelConfig 1 'mychannel ' 'config_block'
+createConfigUpdateTLS 'mychannel' 'config.json' 'modified_config.json' 'config_update_in_envelope.pb'
+# signConfigtxAsPeerOrg 1 'config_update_in_envelope.pb'
+
+echo $CORE_PEER_MSPCONFIGPATH
+echo $CORE_PEER_ADDRESS
+echo $CORE_PEER_LOCALMSPID
+echo $CORE_PEER_TLS_ROOTCERT_FILE
+echo $ORDERER
+
+submitConfigUpdateTransaction 1 'mychannel' 'config_update_in_envelope.pb'
 
 
-createConfigUpdateEndpoint
-createConfigUpdateEndpoint 'mychannel' 'config.json' 'modified_config.json4' 'config_update_in_envelope4.pb'
-signConfigtxAsPeerOrg 1 'config_update_in_envelope.pb'
-submitConfigUpdateTransaction 1 'mychannel' 'config_update_in_envelope4.pb'
+fetchChannelConfig 1 'mychannel ' 'config_block.json'
+# createConfigUpdateEndpoint
+createConfigUpdateEndpoint 'mychannel' 'config.json' 'modified_config.json' 'config_update_in_envelope.pb'
+# signConfigtxAsPeerOrg 1 'config_update_in_envelope.pb'
+
+echo $CORE_PEER_MSPCONFIGPATH
+echo $CORE_PEER_ADDRESS
+echo $CORE_PEER_LOCALMSPID
+echo $CORE_PEER_TLS_ROOTCERT_FILE
+echo $ORDERER
+
+
+submitConfigUpdateTransaction 1 'mychannel' 'config_update_in_envelope.pb'
 
 #verify latest block
 fetchChannelConfig 1 'mychannel ' 'latest.json'
+
+#verify system block
+fetchChannelConfig 1 'system-channel ' 'latestsys.json'
