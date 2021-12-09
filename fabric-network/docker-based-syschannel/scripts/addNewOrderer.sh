@@ -12,7 +12,7 @@
 
 COMPOSE_FILES=docker-compose-new-orderer.yaml
 FABRIC_CFG_PATH=$PWD/../config/
-export CH_NAME='mychannel'
+# export CH_NAME='mychannel'
 
 
 startNewOrderer(){
@@ -185,7 +185,7 @@ fetchConfigBlock(){
 generateOrdererCrypto
 
 # fetch latest config block from sysytem channel
-fetchChannelConfig 1 'system-channel ' 'config_block.json'
+fetchChannelConfig 1 'system-channel' 'config_block.json'
 # create config update for system channel
 createConfigUpdateTLS 'system-channel' 'config.json' 'modified_config.json' 'config_update_in_envelope.pb'
 # sign the config update
@@ -210,7 +210,7 @@ fetchConfigBlock 1 'system-channel'
 
 
 # fetch latest config block from sysytem channel
-fetchChannelConfig 1 'system-channel ' 'config_block.json'
+fetchChannelConfig 1 'system-channel' 'config_block.json'
 # update endpoint info in  sysytem channel
 createConfigUpdateEndpoint 'system-channel' 'config.json' 'modified_config.json' 'config_update_in_envelope.pb'
 # sign the update
@@ -231,7 +231,7 @@ startNewOrderer
 
 # Application channel updates
 
-fetchChannelConfig 1 'mychannel ' 'config_block.json'
+fetchChannelConfig 1 'mychannel' 'config_block.json'
 createConfigUpdateTLS 'mychannel' 'config.json' 'modified_config.json' 'config_update_in_envelope.pb'
 # signConfigtxAsPeerOrg 1 'config_update_in_envelope.pb'
 
@@ -244,7 +244,7 @@ echo $ORDERER
 submitConfigUpdateTransaction 1 'mychannel' 'config_update_in_envelope.pb'
 
 
-fetchChannelConfig 1 'mychannel ' 'config_block.json'
+fetchChannelConfig 1 'mychannel' 'config_block.json'
 # createConfigUpdateEndpoint
 createConfigUpdateEndpoint 'mychannel' 'config.json' 'modified_config.json' 'config_update_in_envelope.pb'
 # signConfigtxAsPeerOrg 1 'config_update_in_envelope.pb'
@@ -259,7 +259,7 @@ echo $ORDERER
 submitConfigUpdateTransaction 1 'mychannel' 'config_update_in_envelope.pb'
 
 #verify latest block
-fetchChannelConfig 1 'mychannel ' 'latest.json'
+fetchChannelConfig 1 'mychannel' 'latest.json'
 
 #verify system block
-fetchChannelConfig 1 'system-channel ' 'latestsys.json'
+fetchChannelConfig 1 'system-channel' 'latestsys.json'
