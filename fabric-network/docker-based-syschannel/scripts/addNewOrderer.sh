@@ -58,7 +58,7 @@ fetchChannelConfig() {
   setOrderer $ORG
   export FABRIC_CFG_PATH=$PWD/../config/
 
-  echo '--------------------' $ORDERER
+
   infoln "$(timestamp) Fetching the most recent configuration block for the channel ${CHANNEL}"
 
   set -x
@@ -161,7 +161,17 @@ submitConfigUpdateTransaction(){
   { set +x; } 2>/dev/null
   infoln " $(timestamp) Submit config update process done"
 }
+fetchConfigBlock(){
 
+    infoln "Fetch latest block from channel ${2}"
+    ORG=$1
+    CHANNEL=$2
+    setOrderer $ORG
+    peer channel fetch config channel-artifacts/latest_config.block -o localhost:7050 --ordererTLSHostnameOverride  orderer1.example.com  -c ${CHANNEL} --tls --cafile $ORDERER
+    docker cp cli:/opt/gopath/src/github.com/hyperledger/fabric/peer/channel-artifacts/latest_config.block ./channel-artifacts/latest_config.block
+
+
+}
 # generate crypto for new orderer
 generateOrdererCrypto
 
@@ -187,6 +197,10 @@ createConfigUpdateEndpoint 'system-channel' 'config_block_iteration2.json' 'newo
 # submit update in system channel
 submitConfigUpdateTransaction 1 'system-channel' 'neworderer_endpoint_config_update_in_envelope.pb'
 
+
+
+# fetch latest block and move to channel artifacts
+fetchConfigBlock 1 'system-channel'
 
 
 # start new orderer container
