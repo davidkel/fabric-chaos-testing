@@ -106,7 +106,7 @@ export class CCHelper {
             logger.logPoint('Submitted');
             const status = await subtx.getStatus();
 
-            if (status.code !== 11 && status.code !== 12 && status.code !== 0) {
+            if (status.code !== 0) {
                 //       // 0 = OK
                 //       // 10 = endorsement_policy_failure
                 //       // 11 = mvcc_read_conflict
@@ -131,6 +131,9 @@ export class CCHelper {
             const gatewayError = error as GatewayError;
             logger.logPoint('Failed', gatewayError.message + this.getErrorDetails(gatewayError));
             this.gatewayTransactionStats.unsuccessfulSubmits++;
+            if (gatewayError.message.includes('Stream refused by server')) {
+                // client and thus gateway likely to be borked
+            }
         } finally {
             this.unfinishedTransactions--
             this.eventHandler.unregisterEvent(txnID)

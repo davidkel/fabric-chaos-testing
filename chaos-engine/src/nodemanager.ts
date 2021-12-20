@@ -56,10 +56,16 @@ export class NodeManager {
         for (const container of containers) {
             const containerName = container.Names[0].substr(1).toLowerCase();
             if (containerName.startsWith('peer') && containerName !== this.gatewayPeer && container.State !== 'paused') {
-                const splitName = container.Names[0].split('.');
                 if (!organisation) {
                     peerContainers.push(container);
-                } else if (splitName[1] === organisation) {
+                    continue;
+                }
+
+                // support a test network format name of peer1.org1.example.com and
+                // an operator network format of peer1-org1
+                const testNetworkSplitName = container.Names[0].split('.');
+                const operatorNetworkSplitName = container.Names[0].split('-');
+                if (testNetworkSplitName[1] === organisation || operatorNetworkSplitName[1] === organisation) {
                     peerContainers.push(container);
                 }
             }

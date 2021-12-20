@@ -6,7 +6,7 @@ export interface TransactionDescriptor {
     | 'longRunningQuery'
     | 'longRunningEvaluate'
     | 'addUpdateAssets'
-    | 'updateChaosAsset';
+    | 'createUpdateChaosAsset';
   params: string[];
 }
 
@@ -15,7 +15,7 @@ export class TransactionData {
       { type: 'submit', name: 'addUpdateAssets', params: ['1', '2000'] },
       { type: 'eval', name: 'longRunningEvaluate', params: ['1', '2000'] },
       { type: 'eval', name: 'longRunningQuery', params: ['1000'] },
-      { type: 'submit', name: 'updateChaosAsset', params: ['cd1', '99'] },
+      { type: 'submit', name: 'createUpdateChaosAsset', params: ['cd1', '99'] },
       { type: 'eval', name: 'readChaosAsset', params: ['cd1'] },
   ];
 
