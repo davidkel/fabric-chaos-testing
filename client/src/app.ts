@@ -12,6 +12,8 @@ interface Orgs {
     [key: string]: OrgProfile;
 }
 
+type ExitStatus = 0 | 1 | 2;
+
 class App {
     keepRunning = true;
 
@@ -28,7 +30,7 @@ class App {
 
         const transactionData: TransactionData = new TransactionData();
 
-        const statsTimer = this.enableStats();
+        const statsTimer = this.enableStatsOutput();
         while (this.keepRunning) {
             const clientConnectionState = await gwHelper.waitForReady();
             if (clientConnectionState === 'NotConnected') {
@@ -50,17 +52,28 @@ class App {
                 if (statsTimer) {
                     clearInterval(statsTimer);
                 }
-                console.log('Exiting process...');
-                process.exit(1);
+                const rc = this.determineExitRc();
+                console.log('Exiting process...', rc);
+                process.exit(rc);
             }
         }
+    }
+
+    private determineExitRc(): ExitStatus {
+        const finalTxnStats = this.ccHelper.getTransactionStats();
+        if (finalTxnStats.unsuccessfulEval === 0 && finalTxnStats.unsuccessfulSubmits === 0) {
+            return 0;
+        }
+
+        // TODO: Need to be able to determine a 2 value
+        return 1;
     }
 
     private displayConfig() {
         console.log('App running with Configuration:\n', config);
     }
 
-    private enableStats(): NodeJS.Timer | null {
+    private enableStatsOutput(): NodeJS.Timer | null {
         if (!this.keepRunning || config.txStatsTimer === 0) {
             return null;
         }
