@@ -95,12 +95,12 @@ const runScenarioLoop = async (scenarioRunner: ScenarioRunner, scenarioNames: st
             break;
         }
 
-        // if mode is random, then check to see if we need to stop due to count
+        // if mode is random, then check to see if we need to stop due to count of scenarios
         if (keepRunning && mode === 'random' && runConstraintType === 'count' && scenariosRun > runConstraint) {
             break;
         }
 
-        // if mode is cycle and not stopped due to time then move to next scenario and check to see if we should stop.
+        // if mode is cycle and not stopped due to time then move to next scenario and check to see if we should stop based on completed cycles
         if (keepRunning && mode === 'cycle') {
             scenarioIndex++;
             if (scenarioIndex >= scenarioNames.length) {

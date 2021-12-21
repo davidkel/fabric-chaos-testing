@@ -107,13 +107,22 @@ export class CCHelper {
             const status = await subtx.getStatus();
 
             if (status.code !== 0) {
-                //       // 0 = OK
-                //       // 10 = endorsement_policy_failure
-                //       // 11 = mvcc_read_conflict
-                //       // 12 = phantom read error
-                //       //
-                //       // 0,11,12 are ok. 10 would indicate a possible gateway problem
-                //       // all the others shouldn't happen but we will want to know if they do
+                // The following status codes are of interest
+                // 0 = OK
+                // 10 = endorsement_policy_failure
+                // 11 = mvcc_read_conflict
+                // 12 = phantom read error
+                //
+                // 11,12 should never happen when using the chaos chaincode, if they do then there
+                // is a problem with the chaos chaincode so we will watch for these currently.
+                // Note that doing operational changes such as changing the
+                // endorsement policy can generate errors such as 10, 11 and proposal mismatches
+                // which would be expected
+                //
+                // 10 would indicate a possible gateway problem as you would expect it to have
+                // collected all the required endorsements before attempting to submit to orderer
+                //
+                // all the others shouldn't happen but we will want to know if they do
                 throw new Error(`unexpected validation code ${status.code}`);
             }
 
