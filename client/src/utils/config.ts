@@ -57,5 +57,4 @@ export const txStatsTimer = env.get('TXSTATS_TIMER').default(5000).asIntPositive
 export const txStatsMode = env
     .get('TXSTATS_MODE')
     .default('All')
-    .asEnum(['Stalled', 'All']);
-
+    .asEnum(['Stalled', 'Stopped', 'Stalled&Stopped', 'All']);

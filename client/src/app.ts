@@ -1,7 +1,7 @@
 import { Gateway } from '@hyperledger/fabric-gateway';
 
 import * as config from './utils/config';
-import { CCHelper, TransactionStats } from './contract';
+import { TransactionRunner, TransactionStats } from './transactionRunner';
 
 import { GatewayHelper, OrgProfile } from './gateway';
 import { TransactionData } from './transactionData';
@@ -12,6 +12,15 @@ interface Orgs {
     [key: string]: OrgProfile;
 }
 
+interface StatsMessage {
+    component: string;
+    timestamp: string;
+    stage: string;
+    message: string;
+}
+
+type StatsStatus = 'stalled' | 'allfailures' | 'working';
+
 type ExitStatus = 0 | 1 | 2;
 
 class App {
@@ -19,9 +28,11 @@ class App {
 
     gateway!: Gateway;
 
-    ccHelper!: CCHelper;
+    transactionRunner!: TransactionRunner;
 
     previousStats: TransactionStats | undefined;
+
+    currentStatsStatus: StatsStatus = 'working';
 
     async main(): Promise<void> {
         this.displayConfig();
@@ -39,8 +50,8 @@ class App {
 
             } else if (clientConnectionState === 'Ready') {
 
-                if (this.ccHelper.getUnfinishedTransactions() < config.maxUnfinishedTransactionCount) {
-                    this.ccHelper.runTransaction(
+                if (this.transactionRunner.getUnfinishedTransactions() < config.maxUnfinishedTransactionCount) {
+                    this.transactionRunner.runTransaction(
                         transactionData.getTransactionDetails(config.transactionType)
                     );
                 } else {
@@ -52,20 +63,31 @@ class App {
                 if (statsTimer) {
                     clearInterval(statsTimer);
                 }
-                const rc = this.determineExitRc();
+                const rc = this.finalStatsAndExitRc();
                 console.log('Exiting process...', rc);
                 process.exit(rc);
             }
         }
     }
 
-    private determineExitRc(): ExitStatus {
-        const finalTxnStats = this.ccHelper.getTransactionStats();
+    private finalStatsAndExitRc(): ExitStatus {
+        const finalTxnStats = this.transactionRunner.getTransactionStats();
+        const statMessage: StatsMessage = {
+            component: 'CLIENT',
+            timestamp: new Date().toISOString(),
+            stage: 'FINAL-STATS',
+            message: ''
+        }
+        this.outputStatFigures(statMessage, finalTxnStats);
+
         if (finalTxnStats.unsuccessfulEval === 0 && finalTxnStats.unsuccessfulSubmits === 0) {
             return 0;
         }
 
-        // TODO: Need to be able to determine a 2 value
+        if (this.currentStatsStatus === 'allfailures') {
+            return 2;
+        }
+
         return 1;
     }
 
@@ -82,39 +104,59 @@ class App {
         return intervalId;
     }
 
-    private outputStatInformation(): void {
-        interface StatsMessage {
-            component: string;
-            timestamp: string;
-            stage: string;
-            message: string;
-        }
+    private outputStatFigures(statMessage: StatsMessage, txStats: TransactionStats) {
+        statMessage.message = `Submit: good=${txStats.successfulSubmits}, bad=${txStats.unsuccessfulSubmits}. Evals: good=${txStats.successfulEval}, bad=${txStats.unsuccessfulEval}`
+        const output = config.colourLogs ? chalk.cyan(JSON.stringify(statMessage)) : JSON.stringify(statMessage);
+        console.error(output);
 
-        const txStats = this.ccHelper.getTransactionStats();
+    }
+
+    private outputStatInformation(): void {
+
+        const txStats = this.transactionRunner.getTransactionStats();
         const statMessage: StatsMessage = {
             component: 'CLIENT',
             timestamp: new Date().toISOString(),
             stage: 'STATS',
             message: ''
         }
-        if (!this.checkStatsHaveChanged(txStats)) {
-            statMessage.message = 'WARNING: Client may have stalled, no new transactions are being evaluated or endorsed';
+
+        const statsStatus = this.checkStatsHaveChanged(txStats);
+
+        if (statsStatus === 'stalled' && (config.txStatsMode != 'Stopped')) {
+            statMessage.message = 'WARNING: Client/Network may have stalled, no new transactions are being evaluated or endorsed';
+            const output = config.colourLogs ? chalk.yellow(JSON.stringify(statMessage)) : JSON.stringify(statMessage);
+            console.error(output);
+            return;
+        }
+
+        if (statsStatus === 'allfailures' && (config.txStatsMode != 'Stalled')) {
+            statMessage.message = 'WARNING: Client/Network may have stopped, all transactions are failing';
             const output = config.colourLogs ? chalk.yellow(JSON.stringify(statMessage)) : JSON.stringify(statMessage);
             console.error(output);
             return;
         }
 
         if (config.txStatsMode === 'All') {
-            statMessage.message = `Submit: good=${txStats.successfulSubmits}, bad=${txStats.unsuccessfulSubmits}. Evals: good=${txStats.successfulEval}, bad=${txStats.unsuccessfulEval}`
-            const output = config.colourLogs ? chalk.cyan(JSON.stringify(statMessage)) : JSON.stringify(statMessage);
-            console.error(output);
+            this.outputStatFigures(statMessage, txStats);
         }
     }
 
-    private checkStatsHaveChanged(currentStats: TransactionStats): boolean {
+    private checkStatsHaveChanged(currentStats: TransactionStats): StatsStatus {
+        let statsStatus: StatsStatus = 'working';
+
         try {
             if (!this.previousStats) {
-                return true;
+                return 'working';
+            }
+
+            if (currentStats.successfulEval == this.previousStats.successfulEval &&
+                currentStats.successfulSubmits == this.previousStats.successfulSubmits &&
+                (currentStats.unsuccessfulEval != this.previousStats.unsuccessfulEval ||
+                currentStats.unsuccessfulSubmits != this.previousStats.unsuccessfulSubmits)) {
+
+                statsStatus = 'allfailures';
+                return statsStatus;
             }
 
             if (currentStats.successfulEval != this.previousStats.successfulEval ||
@@ -122,19 +164,20 @@ class App {
                 currentStats.unsuccessfulEval != this.previousStats.unsuccessfulEval ||
                 currentStats.unsuccessfulSubmits != this.previousStats.unsuccessfulSubmits) {
 
-                return true;
+                return 'working';
             }
 
-            return false;
+            return 'stalled';
         } finally {
             this.previousStats = currentStats;
+            this.currentStatsStatus = statsStatus;
         }
     }
 
 
     private async configure(gwHelper: GatewayHelper) {
         this.gateway = await gwHelper.configureGateway();
-        this.ccHelper = new CCHelper(
+        this.transactionRunner = new TransactionRunner(
             this.gateway,
             config.channelName,
             config.chaincodeName

@@ -31,7 +31,7 @@ class GatewayTransactionStats implements TransactionStats {
     unsuccessfulEval = 0;
 }
 
-export class CCHelper {
+export class TransactionRunner {
     contract: Contract;
 
     network: Network;
