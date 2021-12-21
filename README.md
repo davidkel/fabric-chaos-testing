@@ -97,8 +97,10 @@ or instead of npm start
 | EVENT_TIMEOUT  | number | 5000 | chaincode event received timeout in MS |
 | TRANSACTION_TYPE | 'random','submit','eval' | random | run either submits/evals or a combination |
 | TXSTATS_TIMER | number | 5000 | check and optionally output stats at given interval in ms (0 = turn off) |
-| TXSTATS_MODE | 'Stalled', 'All' | 'All' | output just a warning if client could have stalled or also output txn stats as well. Ignored if TXSTATS_TIMER is 0 |
+| TXSTATS_MODE | 'Stalled', 'Stopped', 'Stalled&Stopped', 'All' | 'All' | output just a warning if client could have stalled or also output txn stats as well. Ignored if TXSTATS_TIMER is 0 |
 | COLOUR_LOGS | 'true', 'false' | 'true' | add colour to log lines |
+
+The tx stats timer is also used to monitor whether a client may be in total failure mode
 
 ### Logging output
 Standard log lines go to stdout, stats and stall warnings go to stderr
