@@ -27,12 +27,11 @@ overrides:
               - "./tsconfig.json"
       plugins:
           - "@typescript-eslint"
-          - jest
-          - "eslint-plugin-tsdoc"
       extends:
           - eslint:recommended
           - plugin:@typescript-eslint/recommended
           - plugin:@typescript-eslint/recommended-requiring-type-checking
-          - plugin:jest/recommended
       rules:
-          tsdoc/syntax: error
+          '@typescript-eslint/no-unused-vars':
+              - warn
+              - argsIgnorePattern: '^_'

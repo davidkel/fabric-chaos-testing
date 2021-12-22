@@ -53,14 +53,14 @@ export class ChaosAssetContract extends Contract {
             await ctx.stub.getStateByRange(null, null);
         }
     }
-    public async longRunningEvaluate(ctx: Context, start: number, end: number) : Promise<void> {
-        for (let id = start; id <= end; id++) {
+    public async longRunningEvaluate(ctx: Context, startChaosAssetId: number, endChaosAssetId: number) : Promise<void> {
+        for (let id = startChaosAssetId; id <= endChaosAssetId; id++) {
             await ctx.stub.getState('' + id);
         }
     }
 
-    public async addUpdateAssets(ctx: Context, start: number, end: number): Promise<void> {
-        for (let id = start; id <= end; id++) {
+    public async addUpdateAssets(ctx: Context, startChaosAssetId: number, endChaosAssetId: number): Promise<void> {
+        for (let id = startChaosAssetId; id <= endChaosAssetId; id++) {
             const chaosAsset = new ChaosAsset();
             chaosAsset.value = '' + id;
             const buffer = Buffer.from(JSON.stringify(chaosAsset));
@@ -69,7 +69,7 @@ export class ChaosAssetContract extends Contract {
         }
     }
 
-    // could use logspout or CORE_VM_DOCKER_ATTACHSTDOUT=true
+    // could use logspout or CORE_VM_DOCKER_ATTACHSTDOUT=true to capture this crash in chaincode logs
     public async crash() {
         process.exit(99);
     }

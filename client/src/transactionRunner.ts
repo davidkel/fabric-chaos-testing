@@ -1,3 +1,6 @@
+/*
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 import {
     ChaincodeEvent,
@@ -150,10 +153,10 @@ export class TransactionRunner {
     }
 
     private async evaluateTransaction(func: string, args: string[]): Promise<void> {
-
         const opts: ProposalOptions = {
             arguments: args
         };
+
         const proposal = this.contract.newProposal(func, opts);
         const txnId = proposal.getTransactionId();
         const logger = new Logger(txnId, config.logLevel);

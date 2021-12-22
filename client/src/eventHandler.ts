@@ -1,7 +1,10 @@
+/*
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 import { ChaincodeEvent, ChaincodeEventsOptions, CloseableAsyncIterable, Network } from '@hyperledger/fabric-gateway';
 import { Logger } from './utils/logger';
 import * as config from './utils/config'
-
 
 export class EventHandler {
 

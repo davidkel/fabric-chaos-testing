@@ -5,18 +5,19 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
+    "lint": "eslint . --ext .ts",
     "start": "node dist/start.js ./scenarios/stop-scenarios peer0.org1.example.com",
     "build-docker": "docker build . -t chaos:latest"
   },
   "devDependencies": {
-    "@tsconfig/node12": "^1.0.9",
+    "@tsconfig/node16": "^1.0.2",
     "@types/dockerode": "3.2.7",
     "@types/js-yaml": "^4.0.3",
-    "@types/node": "^12.20.25",
+    "@types/node": "16.11.7",
     "@types/source-map-support": "^0.5.4",
-    "@typescript-eslint/eslint-plugin": "^4.31.2",
-    "@typescript-eslint/parser": "^4.31.2",
-    "eslint": "^7.32.0",
+    "@typescript-eslint/eslint-plugin": "^5.8.0",
+    "@typescript-eslint/parser": "^5.8.0",
+    "eslint": "^8.5.0",
     "typescript": "4.4.3"
   },
   "dependencies": {
