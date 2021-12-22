@@ -1,3 +1,7 @@
+/*
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 import {
     connect,
     Identity,
@@ -8,7 +12,6 @@ import {
 import * as grpc from '@grpc/grpc-js';
 import { promises as fs } from 'fs';
 import * as crypto from 'crypto';
-
 import * as config from './utils/config';
 import { defaultTimeout } from './utils/helper';
 
@@ -17,7 +20,8 @@ export interface OrgProfile {
     certPath: string;
     tlsCertPath: string;
     mspID: string;
-  }
+}
+
 export type  ClientConnectionState = 'Ready' | 'NotStarted' | 'NotConnected';
 
 export class GatewayHelper{
@@ -46,7 +50,7 @@ export class GatewayHelper{
         return this.gateway;
     }
 
-    private  async  newGrpcConnection(tlsCertPath: string): Promise<grpc.Client> {
+    private async newGrpcConnection(tlsCertPath: string): Promise<grpc.Client> {
         const tlsRootCert = await fs.readFile(
             tlsCertPath
         );
@@ -57,7 +61,7 @@ export class GatewayHelper{
         });
     }
 
-    private  async  newIdentity(certPath: string, mspId:string): Promise<Identity> {
+    private async newIdentity(certPath: string, mspId:string): Promise<Identity> {
         const credentials = await fs.readFile(
             certPath
         );
@@ -67,7 +71,7 @@ export class GatewayHelper{
         };
     }
 
-    private  async  newSigner(keyPath: string): Promise<Signer> {
+    private async newSigner(keyPath: string): Promise<Signer> {
         const privateKeyPem = await fs.readFile(
             keyPath
         );
@@ -84,7 +88,7 @@ export class GatewayHelper{
             }
 
             const timeout = new Date().getTime() + config.grpcTimeout;
-            this.client.waitForReady(timeout, (err)=>{
+            this.client.waitForReady(timeout, (err) => {
                 if (err){
                     resolve('NotConnected');
                 }
@@ -94,7 +98,5 @@ export class GatewayHelper{
 
             })
         })
-
-
     }
 }

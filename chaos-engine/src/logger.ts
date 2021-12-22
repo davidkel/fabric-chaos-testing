@@ -1,3 +1,7 @@
+/*
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 export type ScenarioStatus = 'Start' | 'Running' | 'End' | '';
 
 interface ChaosLogMessage {
@@ -9,7 +13,8 @@ interface ChaosLogMessage {
 }
 
 export class Logger {
-    static logPoint(scenarioStatus: ScenarioStatus, scenarioName: string, message: string) {
+    static logPoint(scenarioStatus: ScenarioStatus, scenarioName: string, message: string): void
+    {
         const timestamp = new Date().toISOString();
         const logMessage: ChaosLogMessage = {
             component: 'CHAOS',

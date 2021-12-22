@@ -1,3 +1,7 @@
+/*
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 import sourceMapSupport from 'source-map-support'
 sourceMapSupport.install()
 
@@ -72,7 +76,7 @@ const runSingleScenario = async (scenarioRunner: ScenarioRunner, scenarioNames: 
 }
 
 const runScenarioLoop = async (scenarioRunner: ScenarioRunner, scenarioNames: string[], mode: ChaosMode, runConstraintType: RunConstraintType, runConstraint: number): Promise<ScenarioStats> => {
-    let startTime = Date.now();
+    const startTime = Date.now();
     let endTime = startTime;
     let scenariosRun = 0;
     let cyclesCompleted = 0;
@@ -127,7 +131,7 @@ const runScenarioLoop = async (scenarioRunner: ScenarioRunner, scenarioNames: st
 // mode (defaults to random if not specified)
 // run limiter. If it ends with 's' then limit the run to that number of seconds otherwise limit it either to number of scenarios (random) or number of cycles
 
-(async () => {
+(async (): Promise<void> => {
 
     try {
         const scenarioDirectory = process.argv[2];
@@ -171,4 +175,4 @@ const runScenarioLoop = async (scenarioRunner: ScenarioRunner, scenarioNames: st
         console.log('Terminating due to error');
     }
 
-})();
+})().catch(error => console.log('******** FAILED to run the application:', error));

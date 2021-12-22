@@ -1,3 +1,7 @@
+/*
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 import {NodeManager, NodeManagerActions} from './nodemanager'
 import {Logger} from './logger';
 import { promises as fs } from 'fs';
@@ -5,8 +9,8 @@ import * as path from 'path'
 import * as yaml from 'js-yaml'
 
 class Scenario {
-    name: string = ''
-    description: string = ''
+    name = ''
+    description = ''
     steps: string[] = []
 }
 
@@ -88,24 +92,28 @@ export class ScenarioRunner {
         return this.scenarioNames;
     }
 
-    async runScenario(scenarioName: string) {
+    async runScenario(scenarioName: string): Promise<void> {
         const scenario = this.loadedScenarios.get(scenarioName);
-        const nodeManager = new NodeManager(this.gatewayPeer, scenarioName);
-        Logger.logPoint('Start', scenarioName, `running scenario ${scenario?.description}`);
+        if (!scenario) {
+            throw new Error(`No scenario with the name ${scenarioName} can be found`);
+        }
 
-        for (const step of scenario!.steps) {
+        const nodeManager = new NodeManager(this.gatewayPeer, scenarioName);
+        Logger.logPoint('Start', scenarioName, `running scenario ${scenario.description}`);
+
+        for (const step of scenario.steps) {
             const actionAndParameters = step.split(' ');
             const stepMethod = stepMapper.get(actionAndParameters[0].toLowerCase() as Steps);
             if (!stepMethod) {
                 throw new Error(`No step called ${actionAndParameters[0]} exists`);
             }
 
-            const toInvoke = nodeManager[stepMethod as keyof NodeManager] as NodeManagerActions;
+            const toInvoke = nodeManager[stepMethod] as NodeManagerActions;
             actionAndParameters.shift();
             await toInvoke.call(nodeManager, actionAndParameters);
         }
 
-        Logger.logPoint('End', scenarioName, `scenario ${scenario?.description} completed successfully`);
+        Logger.logPoint('End', scenarioName, `scenario ${scenario.description} completed successfully`);
     }
 
     private valiateSenario(scenario: Scenario, scenarioPath: string) {
@@ -128,7 +136,7 @@ export class ScenarioRunner {
         }
     }
 
-    scenarioExists(scenarioName: string) {
+    scenarioExists(scenarioName: string): boolean {
         return this.loadedScenarios.get(scenarioName) !== undefined;
     }
 }

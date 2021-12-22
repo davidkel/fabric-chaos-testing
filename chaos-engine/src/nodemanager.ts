@@ -1,3 +1,7 @@
+/*
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 import Dockerode, { ContainerInfo } from 'dockerode';
 import {Logger} from './logger';
 
@@ -90,11 +94,17 @@ export class NodeManager {
 
     private async stopContainer(containerInfo: ContainerInfo, stopType: StopType, containerType: ContainerType) {
         const containerName = containerInfo.Names[0].substr(1);
-        const containerTerminationMessage = containerTerminationMessages.get(stopType);
-        Logger.logPoint('Running', this.scenarioName, `${containerTerminationMessage!.terminatingMessage} ${containerType} ${containerName} ${containerInfo.Id}`);
+        let containerTerminationMessage = containerTerminationMessages.get(stopType);
+        if (!containerTerminationMessage) {
+            containerTerminationMessage = {
+                terminatedMessage: 'terminated ',
+                terminatingMessage: 'terminating'
+            };
+        }
+        Logger.logPoint('Running', this.scenarioName, `${containerTerminationMessage.terminatingMessage} ${containerType} ${containerName} ${containerInfo.Id}`);
         const container = this.docker.getContainer(containerInfo.Id);
         await container[stopType]();
-        Logger.logPoint('Running', this.scenarioName, `${containerTerminationMessage!.terminatedMessage} ${containerType} ${containerName} ${containerInfo.Id}`);
+        Logger.logPoint('Running', this.scenarioName, `${containerTerminationMessage.terminatedMessage} ${containerType} ${containerName} ${containerInfo.Id}`);
         this.stoppedContainers.push(containerInfo);
     }
 
@@ -104,8 +114,8 @@ export class NodeManager {
             return;
         }
 
-        let containersToStart: ContainerInfo[] = [];
-        let containerName: string = '';
+        const containersToStart: ContainerInfo[] = [];
+        let containerName = '';
 
         for (const stoppedContainer of this.stoppedContainers) {
             containerName = stoppedContainer.Names[0].substr(1).toLowerCase();
@@ -128,7 +138,7 @@ export class NodeManager {
                 if (restartType === 'first') {
                     break;
                 }
-        }
+            }
         }
 
         if (containersToStart.length === 0) {
@@ -137,10 +147,10 @@ export class NodeManager {
 
         for (const containerToStart of containersToStart) {
             containerName = containerToStart.Names[0].substr(1).toLowerCase();
-            Logger.logPoint('Running', this.scenarioName, `${start === 'restart' ? 'restarting' : 'unpausing'} ${containerType} ${containerName} ${containerToStart!.Id}`);
-            const container = this.docker.getContainer(containerToStart!.Id);
+            Logger.logPoint('Running', this.scenarioName, `${start === 'restart' ? 'restarting' : 'unpausing'} ${containerType} ${containerName} ${containerToStart.Id}`);
+            const container = this.docker.getContainer(containerToStart.Id);
             await (start === 'restart' ? container.start() : container.unpause());
-            Logger.logPoint('Running', this.scenarioName, `${start === 'restart' ? 'restarted ' : 'unpaused '} ${containerType} ${containerName} ${containerToStart!.Id}`);
+            Logger.logPoint('Running', this.scenarioName, `${start === 'restart' ? 'restarted ' : 'unpaused '} ${containerType} ${containerName} ${containerToStart.Id}`);
             const indexOfContainer = this.stoppedContainers.indexOf(containerToStart);
             this.stoppedContainers.splice(indexOfContainer, 1);
         }
@@ -193,9 +203,9 @@ export class NodeManager {
 
         if (peers.length === 0) {
             if (organisation) {
-                Logger.logPoint('Running', this.scenarioName, `No running non gateway peers for ${organisation} found`)
+                Logger.logPoint('Running', this.scenarioName, `No running non gateway peers for ${organisation} found`);
             } else {
-                Logger.logPoint('Running', this.scenarioName, `No running non gateway peers found`)
+                Logger.logPoint('Running', this.scenarioName, 'No running non gateway peers found');
             }
             return;
         }
@@ -299,15 +309,15 @@ export class NodeManager {
     // Misc Actions
 
     async sleep(params: string[]): Promise<void> {
-        let ms = params[0].toLowerCase();
+        const sleepParam = params[0].toLowerCase();
         let delay: number;
 
-        if (ms.startsWith('random[')) {
-            const randomRange = ms.substr(7, ms.length - 8).split(',');
+        if (sleepParam.startsWith('random[')) {
+            const randomRange = sleepParam.substr(7, sleepParam.length - 8).split(',');
             delay = Math.round(Math.random() * (parseInt(randomRange[1]) - parseInt(randomRange[0]))) + parseInt(randomRange[0]);
         } else {
             delay = parseInt(params[0]);
-            if (delay === NaN) {
+            if (isNaN(delay)) {
                 delay = 1000;
             }
         }
@@ -318,7 +328,7 @@ export class NodeManager {
 
     // End Of Actions
 
-    static validateStep(stepMethod: string, actionAndParameters: string[]) {
+    static validateStep(stepMethod: string, actionAndParameters: string[]): void {
         if (stepMethod === 'sleep') {
 
             if (!actionAndParameters[1]) {
@@ -327,10 +337,10 @@ export class NodeManager {
 
             if (actionAndParameters[1].startsWith('random[')) {
                 const randomRange = actionAndParameters[1].substr(7, actionAndParameters[1].length - 8).split(',');
-                if (randomRange.length != 2 || parseInt(randomRange[0]) === NaN || parseInt(randomRange[1]) === NaN) {
+                if (randomRange.length != 2 || isNaN(parseInt(randomRange[0])) || isNaN(parseInt(randomRange[1]))) {
                     throw new Error(`${actionAndParameters[0]} parameter is not a valid random declaration`);
                 }
-            } else if (parseInt(actionAndParameters[1]) === NaN) {
+            } else if (isNaN(parseInt(actionAndParameters[1]))) {
                 throw new Error(`${actionAndParameters[0]} parameter is not a number`);
             }
         }
