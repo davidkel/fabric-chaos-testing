@@ -1,10 +1,11 @@
 {
   "name": "chaos-engine",
   "version": "1.0.0",
-  "description": "This is a process that executes a series of scenarios randomly. The scenarios are made of of the following simple commands",
-  "main": "index.js",
+  "description": "This is a process that executes a series of scenarios. The scenarios are made up of simple commands to control nodes",
+  "main": "dist/start.js",
   "scripts": {
-    "build": "tsc",
+    "compile": "tsc",
+    "build": "npm run lint && npm run compile",
     "lint": "eslint . --ext .ts",
     "start": "node dist/start.js ./scenarios/stop-scenarios peer0.org1.example.com",
     "build-docker": "docker build . -t chaos:latest"
