@@ -2,15 +2,16 @@
   "name": "client-application-for-fabric-testing",
   "version": "1.0.0",
   "description": "",
-  "main": "dist/index.js",
+  "main": "dist/app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint . --ext .ts",
-    "build": "tsc",
-    "start": "npm run build && node -r source-map-support/register --require dotenv/config dist/app.js"
+    "build": "npm run lint && npm run compile",
+    "compile": "tsc",
+    "start": "npm run build && node dist/app.js"
   },
   "author": "",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "devDependencies": {
     "@tsconfig/node16": "^1.0.2",
     "@typescript-eslint/eslint-plugin": "^5.8.0",

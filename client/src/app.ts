@@ -2,6 +2,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import 'dotenv/config';
+import 'source-map-support/register';
+
 import { Gateway } from '@hyperledger/fabric-gateway';
 
 import * as config from './utils/config';
