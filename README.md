@@ -1,9 +1,11 @@
 # Getting started
+- node 14 or node 16, preferably 16
+- docker
 
 ## Fabric test network
 In fabric-network/docker-based-syschannel
 
-- First, download the 2.3.x binaries for fabric and unpack the tar file ensuring the binaries unpack into the bin directory and the config files unpack into the config directory
+- First, download the 2.3.x or 2.4.x binaries for fabric and unpack the tar file ensuring the binaries unpack into the bin directory and the config files unpack into the config directory
 
 ### To bring up the test network
 - ./network.sh up
